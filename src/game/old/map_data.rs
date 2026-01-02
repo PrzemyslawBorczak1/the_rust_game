@@ -1,5 +1,5 @@
 use bevy::prelude::{App, Plugin, ResMut, Resource, Startup};
-use image::{ImageBuffer, ImageReader, Rgb};
+use image::{ImageBuffer, ImageReader, Rgba};
 use std::collections::HashMap;
 
 use super::resources::{Map, Province};
@@ -16,17 +16,17 @@ impl Plugin for MapDataPlugin {
 
 #[derive(Resource, Default, Debug)]
 pub struct MapData {
-     assets_map_path: String,
+    assets_map_path: String,
     pub width: u32,
     pub height: u32,
 }
 
-impl MapData{
-    pub fn get_path(&self) -> String{
+impl MapData {
+    pub fn get_path(&self) -> String {
         "assets/".to_string() + self.assets_map_path.as_str()
     }
 
-     pub fn get_path_in_assets(&self) -> String{
+    pub fn get_path_in_assets(&self) -> String {
         self.assets_map_path.clone()
     }
 }
@@ -34,11 +34,11 @@ impl MapData{
 fn set_map(map_res: ResMut<Map>, mut data: ResMut<MapData>) {
     data.assets_map_path = "map3.png".to_string();
 
-    let rgb: ImageBuffer<Rgb<u8>, Vec<u8>> = ImageReader::open(data.get_path())
+    let rgb: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageReader::open(data.get_path())
         .unwrap()
         .decode()
         .unwrap()
-        .to_rgb8();
+        .to_rgba8();
 
     let (w, h) = rgb.dimensions();
 
@@ -48,28 +48,28 @@ fn set_map(map_res: ResMut<Map>, mut data: ResMut<MapData>) {
     provinces_from_image(map_res, rgb);
 }
 
-fn provinces_from_image(mut map_res: ResMut<Map>, rgb: ImageBuffer<Rgb<u8>, Vec<u8>>) {
-    let mut hm = HashMap::<Rgb<u8>, Province>::new();
+fn provinces_from_image(mut map_res: ResMut<Map>, rgba: ImageBuffer<Rgba<u8>, Vec<u8>>) {
+    let mut hm = HashMap::<Rgba<u8>, Province>::new();
     let mut map = Map::default();
 
-    let (w, h) = rgb.dimensions();
+    let (w, h) = rgba.dimensions();
 
     map.set_map(w, h);
 
     for y in 0..h {
         for x in 0..w {
-            let c = *rgb.get_pixel(x, y);
+            let c = *rgba.get_pixel(x, y);
             hm.entry(c).or_default();
 
             if x + 1 < w {
-                let right = *rgb.get_pixel(x + 1, y);
+                let right = *rgba.get_pixel(x + 1, y);
                 if right != c {
                     add_border(&mut hm, c, right);
                 }
             }
 
             if y + 1 < h {
-                let down = *rgb.get_pixel(x, y + 1);
+                let down = *rgba.get_pixel(x, y + 1);
                 if down != c {
                     add_border(&mut hm, c, down);
                 }
@@ -88,7 +88,7 @@ fn provinces_from_image(mut map_res: ResMut<Map>, rgb: ImageBuffer<Rgb<u8>, Vec<
     *map_res = map;
 }
 
-fn add_border(hm: &mut HashMap<Rgb<u8>, Province>, a: Rgb<u8>, b: Rgb<u8>) {
+fn add_border(hm: &mut HashMap<Rgba<u8>, Province>, a: Rgba<u8>, b: Rgba<u8>) {
     hm.entry(a).or_default();
     hm.entry(b).or_default();
 

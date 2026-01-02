@@ -44,7 +44,6 @@ fn setup(
             ..default()
         },
     ));
-
     let map_texture: Handle<Image> = asset_server.load(map_data.get_path_in_assets());
     let id_texture: Handle<Image> = asset_server.load(map_data.get_path_in_assets());
 
@@ -107,7 +106,7 @@ fn select_province(
                         province_color[0] as f32 / 255.0,
                         province_color[1] as f32 / 255.0,
                         province_color[2] as f32 / 255.0,
-                        1.0,
+                        province_color[3] as f32 / 255.0,
                     );
                     println!(
                         "Selected province RGB: {:?}, shader color: {:?}",
