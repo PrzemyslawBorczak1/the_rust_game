@@ -1,5 +1,6 @@
-use crate::GameState;
+
 use bevy::prelude::*;
+use crate::data::GameState;
 
 #[derive(Debug, Resource, Default)]
 pub enum GameStartType {
@@ -147,7 +148,7 @@ fn load(
     mut game_state: ResMut<NextState<GameState>>,
     game_start_type: ResMut<GameStartType>,
 ) {
-    game_state.set(GameState::Game);
+    game_state.set(GameState::StartGame);
     set_data(game_start_type);
 }
 
@@ -156,7 +157,7 @@ fn new_game(
     mut game_state: ResMut<NextState<GameState>>,
     game_start_type: ResMut<GameStartType>,
 ) {
-    game_state.set(GameState::Game);
+    game_state.set(GameState::StartGame);
     set_data(game_start_type);
 }
 

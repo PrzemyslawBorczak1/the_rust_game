@@ -1,0 +1,141 @@
+use crate::data::GameState;
+use crate::menu::{GameStartType, NewGameData};
+use bevy::asset::AssetPath;
+use bevy::tasks::futures_lite::io::AssertAsync;
+use bevy::text::TextRoot;
+use bevy::{prelude::*, text};
+use std::path::Path;
+
+pub struct SetMapPlugin;
+
+use crate::data::*;
+
+impl Plugin for SetMapPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_asset::<Textures>()
+            .add_systems(
+                OnEnter(GameState::StartGame),
+                (add_resource, set_map).chain(),
+            )
+            .add_systems(OnEnter(GameState::StartGame), loading_screen_setup)
+            .add_systems(Update, check.run_if(in_state(GameState::StartGame)));
+    }
+}
+
+#[derive(Component)]
+struct CheckTimer(Timer, bool);
+
+fn loading_screen_setup(mut commands: Commands) {
+    commands.spawn((DespawnOnExit(GameState::StartGame), Camera2d::default()));
+
+    commands.spawn((
+        DespawnOnExit(GameState::StartGame),
+        Node {
+            width: percent(100),
+            height: percent(100),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+
+            ..default()
+        },
+        children![(
+            Text::new("Loading"),
+            TextFont {
+                font_size: 67.0,
+                ..default()
+            },
+            Node {
+                margin: UiRect::all(px(50)),
+                ..default()
+            },
+        ),],
+    ));
+
+    commands.spawn((
+        DespawnOnExit(GameState::StartGame),
+        CheckTimer(Timer::from_seconds(1.0, TimerMode::Once), false),
+    ));
+}
+
+fn check(
+    time: Res<Time>,
+    mut timer: Single<&mut CheckTimer>,
+    mut map: ResMut<Map>,
+
+    asset_server: Res<AssetServer>,
+    game_start_type: Res<GameStartType>,
+    images: Res<Assets<Image>>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
+    if timer.0.tick(time.delta()).is_finished() {
+        timer.1 = true;
+    }
+    if !timer.1 {
+        return;
+    }
+
+    match &*game_start_type {
+        GameStartType::NewGame(data) => {
+            let id = asset_server.load(AssetPath::from_path(Path::new(&data.id_path)));
+            map.set_map_from_image(&*images, &id);
+        }
+        _ => {}
+    }
+
+    if map.is_ready() {
+        println!("ready");
+        next_state.set(GameState::Game);
+    }
+}
+
+fn add_resource(mut commands: Commands) {
+    commands.init_resource::<Map>();
+    commands.init_resource::<TexturesHandle>();
+}
+
+fn set_map(
+    game_start_type: Res<GameStartType>,
+    asset_server: Res<AssetServer>,
+    mut provinces: ResMut<Assets<Textures>>,
+    mut commands: Commands,
+
+    images: Res<Assets<Image>>,
+    mut map: ResMut<Map>,
+    mut text_h: ResMut<TexturesHandle>,
+) {
+    match &*game_start_type {
+        GameStartType::NewGame(data) => {
+            new_game_setup(&data, asset_server, &mut *provinces, images, map, text_h);
+        }
+        GameStartType::Load(_) => load_game_setup(),
+        // todo error
+        GameStartType::Undefined => {}
+    }
+}
+
+fn new_game_setup(
+    data: &NewGameData,
+    asset_server: Res<AssetServer>,
+    provinces: &mut Assets<Textures>,
+
+    images: Res<Assets<Image>>,
+    mut map: ResMut<Map>,
+    mut texture_h: ResMut<TexturesHandle>,
+) {
+    println!("new game");
+    println!("{:?}", data.id_path);
+    println!("{:?}", data.texture_path);
+
+    let id = asset_server.load(AssetPath::from_path(Path::new(&data.id_path)));
+    let handle = provinces.add(Textures {
+        map_handle: id.clone(),
+        province_handle: asset_server.load(AssetPath::from_path(Path::new(&data.texture_path))),
+        selected_color: Vec4::new(0.0, 0.0, 0.0, 0.0),
+    });
+
+    texture_h.0 = handle;
+}
+
+fn load_game_setup() {
+    println!("load game");
+}
