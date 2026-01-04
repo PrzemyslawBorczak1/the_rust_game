@@ -14,19 +14,13 @@
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
-    let base_color: vec4<f32> =
-        textureSample(texture, texture_sampler, in.uv);
+    let base_color: vec4<f32> = textureSample(texture, texture_sampler, in.uv);
 
     let eps: vec4<f32> = vec4<f32>(2.0 / 255.0);
 
-    let selected_linear = vec4<f32>(
-        pow(selected.r, 2.2),
-        pow(selected.g, 2.2),
-        pow(selected.b, 2.2),
-        selected.a
-    );
+    
 
-    if (all(abs(base_color - selected_linear) <= eps)) {
+    if (all(abs(base_color - selected) <= eps)) {
         return vec4<f32>(1.0);
     }
 

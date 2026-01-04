@@ -46,12 +46,14 @@ fn game_setup(
         },
     ));
 
-    let mesh_handle = meshes.add(Rectangle::from_size(Vec2::new(
+    let rect_handle = meshes.add(Rectangle::from_size(Vec2::new(
         map.width as f32,
         map.height as f32,
     )));
 
-    commands.spawn((Mesh2d(mesh_handle), MeshMaterial2d(texture.0.clone())));
+
+ 
+    commands.spawn((Mesh2d(rect_handle), MeshMaterial2d(texture.0.clone())));
 }
 
 fn controls(
@@ -72,6 +74,7 @@ fn controls(
             projection2d.scale *= powf(0.25f32, delta);
         }
 
+        // todo 
         let viewport_size = camera
             .viewport
             .as_ref()

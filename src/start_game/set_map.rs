@@ -1,6 +1,8 @@
 use crate::data::GameState;
 use crate::menu::{GameStartType, NewGameData};
 use bevy::asset::AssetPath;
+use bevy::image::ImageSampler;
+use bevy::render::render_resource::TextureFormat;
 use bevy::tasks::futures_lite::io::AssertAsync;
 use bevy::text::TextRoot;
 use bevy::{prelude::*, text};
@@ -18,7 +20,10 @@ impl Plugin for SetMapPlugin {
                 (add_resource, set_map).chain(),
             )
             .add_systems(OnEnter(GameState::StartGame), loading_screen_setup)
-            .add_systems(Update, check.run_if(in_state(GameState::StartGame)));
+            .add_systems(
+                Update,
+                (check, configure_sampler).run_if(in_state(GameState::StartGame)),
+            );
     }
 }
 
@@ -73,7 +78,7 @@ fn check(
     if !timer.1 {
         return;
     }
-
+    // todo should wait or sth for image loading
     match &*game_start_type {
         GameStartType::NewGame(data) => {
             let id = asset_server.load(AssetPath::from_path(Path::new(&data.id_path)));
@@ -85,6 +90,22 @@ fn check(
     if map.is_ready() {
         println!("ready");
         next_state.set(GameState::Game);
+    }
+}
+
+// to do should check i f images are loaded and cooperate wiht chekc or sth
+fn configure_sampler(
+    textures_handle: Res<TexturesHandle>,
+    materials: Res<Assets<Textures>>,
+    mut images: ResMut<Assets<Image>>,
+) {
+    let Some(material) = materials.get(&textures_handle.0) else {
+        return; // material not created yet
+    };
+
+    if let Some(image) = images.get_mut(&material.map_handle) {
+        image.sampler = ImageSampler::nearest();
+        image.texture_descriptor.format = TextureFormat::Rgba8Unorm;
     }
 }
 
