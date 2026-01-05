@@ -39,8 +39,8 @@ mod to_delete {
     // todo delete
     fn set_data(mut fetch: ResMut<FetchGamePath>, mut save: ResMut<SaveGamePath>) {
         *fetch = FetchGamePath {
-            id_texture: "map_id.png".to_string(),
-            province_texture: "map_id.png".to_string(),
+            id_texture: "map_nr.png".to_string(),
+            province_texture: "map_nr.png".to_string(),
             vec_provinces: "provinces.json".to_string(),
             vec_country: "countries.json".to_string(),
         };

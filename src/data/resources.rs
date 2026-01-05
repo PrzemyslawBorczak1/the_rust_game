@@ -84,13 +84,6 @@ pub enum GameState {
     Game,
 }
 
-
-
-
-
-
-
-
 #[derive(Debug, Default, Resource)]
 pub struct FetchGamePath {
     pub id_texture: String,
@@ -113,11 +106,20 @@ pub struct VecProvince(pub Vec<Province>);
 #[derive(Debug, Clone, Asset, TypePath)]
 pub struct VecCountry(pub Vec<Country>);
 
+#[derive(Debug, Clone, Asset, TypePath)]
+pub struct IdMap{
+    pub width : u32,
+    pub height: u32,
+    pub map: Vec<u32>,
+}
+
+
+
 #[derive(Debug, Resource, Default)]
 pub struct FetchHandles {
-    pub id_texture: Handle<Image>,
     pub province_texture: Handle<Image>,
-
+    
+    pub id_map: Handle<IdMap>,
     pub vec_provinces: Handle<VecProvince>,
     pub vec_country: Handle<VecCountry>,
 }

@@ -157,15 +157,15 @@ mod seters {
     // todo delete
     fn set_data(mut fetch: ResMut<FetchGamePath>, mut save: ResMut<SaveGamePath>) {
         *fetch = FetchGamePath {
-            id_texture: "map_id.png".to_string(),
-            province_texture: "map_id.png".to_string(),
+            id_texture: "map_nr.png".to_string(),
+            province_texture: "map_nr.png".to_string(),
             vec_provinces: "json".to_string(),
             vec_country: "json".to_string(),
         };
 
         *save = SaveGamePath {
-            id_texture: "id_save1.png".to_string(),
-            province_texture: "texture_save1.png".to_string(),
+            id_texture: "map_nr.png".to_string(),
+            province_texture: "map_nr.png".to_string(),
             vec_provinces: "json".to_string(),
             vec_country: "json".to_string(),
         }
