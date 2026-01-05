@@ -8,21 +8,34 @@
 @group(#{MATERIAL_BIND_GROUP}) @binding(3) var texture: texture_2d<f32>;
 @group(#{MATERIAL_BIND_GROUP}) @binding(4) var texture_sampler: sampler;
 
-@group(#{MATERIAL_BIND_GROUP}) @binding(5) var<uniform> selected: vec4<f32>;
+@group(#{MATERIAL_BIND_GROUP}) @binding(5) var<uniform> selected: vec4<u32>;
+
+@group(#{MATERIAL_BIND_GROUP}) @binding(6) var<storage, read> id: array<u32>;
+@group(#{MATERIAL_BIND_GROUP}) @binding(7) var<uniform> width: u32;
+@group(#{MATERIAL_BIND_GROUP}) @binding(8) var<uniform> height: u32;
 
 
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
-    let base_color: vec4<f32> = textureSample(texture, texture_sampler, in.uv);
+    let uv = in.uv;
 
-    let eps: vec4<f32> = vec4<f32>(2.0 / 255.0);
+    let x = min(u32(uv.x * f32(width)),  width - 1u);
+    let y = min(u32(uv.y * f32(height)), height - 1u);
 
-    
+    let base = (x + y * width) * 4u;
 
-    if (all(abs(base_color - selected) <= eps)) {
-        return vec4<f32>(1.0);
+    var matches = true;
+    for (var i: u32 = 0u; i < 4u; i = i + 1u) {
+        if (id[base + i] != selected[i]) {
+            matches = false;
+            break;
+        }
     }
 
-    return base_color;
+    if (matches) {
+        return vec4f(0.0, 0.0, 0.0, 0.0);
+    }
+
+    return textureSample(texture, texture_sampler, uv);
 }

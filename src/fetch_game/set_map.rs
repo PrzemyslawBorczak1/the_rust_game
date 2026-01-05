@@ -1,5 +1,4 @@
 use crate::data::GameState;
-use crate::menu::{GameStartType, NewGameData};
 use bevy::asset::AssetPath;
 use bevy::image::ImageSampler;
 use bevy::render::render_resource::TextureFormat;
@@ -14,12 +13,11 @@ use crate::data::*;
 
 impl Plugin for SetMapPlugin {
     fn build(&self, app: &mut App) {
-        app.init_asset::<Textures>()
+        app.init_asset::<GPUMap>()
             .add_systems(
                 OnEnter(GameState::StartGame),
-                (add_resource, set_map).chain(),
+                ((add_resource, set_map).chain(), loading_screen_setup),
             )
-            .add_systems(OnEnter(GameState::StartGame), loading_screen_setup)
             .add_systems(
                 Update,
                 (check, configure_sampler).run_if(in_state(GameState::StartGame)),
@@ -93,10 +91,10 @@ fn check(
     }
 }
 
-// to do should check i f images are loaded and cooperate wiht chekc or sth
+// todo should check i f images are loaded and cooperate wiht chekc or sth
 fn configure_sampler(
-    textures_handle: Res<TexturesHandle>,
-    materials: Res<Assets<Textures>>,
+    textures_handle: Res<GPUMapHandle>,
+    materials: Res<Assets<GPUMap>>,
     mut images: ResMut<Assets<Image>>,
 ) {
     let Some(material) = materials.get(&textures_handle.0) else {
@@ -111,22 +109,21 @@ fn configure_sampler(
 
 fn add_resource(mut commands: Commands) {
     commands.init_resource::<Map>();
-    commands.init_resource::<TexturesHandle>();
+    commands.init_resource::<GPUMapHandle>();
 }
 
 fn set_map(
     game_start_type: Res<GameStartType>,
     asset_server: Res<AssetServer>,
-    mut provinces: ResMut<Assets<Textures>>,
     mut commands: Commands,
 
-    images: Res<Assets<Image>>,
     mut map: ResMut<Map>,
-    mut text_h: ResMut<TexturesHandle>,
+    mut gpu_maps: ResMut<Assets<GPUMap>>,
+    mut gpu_handle: ResMut<GPUMapHandle>,
 ) {
     match &*game_start_type {
         GameStartType::NewGame(data) => {
-            new_game_setup(&data, asset_server, &mut *provinces, images, map, text_h);
+            new_game_setup(&data, asset_server, &mut *gpu_maps, gpu_handle, map);
         }
         GameStartType::Load(_) => load_game_setup(),
         // todo error
@@ -135,26 +132,28 @@ fn set_map(
 }
 
 fn new_game_setup(
-    data: &NewGameData,
+    data: &GameData,
     asset_server: Res<AssetServer>,
-    provinces: &mut Assets<Textures>,
 
-    images: Res<Assets<Image>>,
+    gpu_maps: &mut Assets<GPUMap>,
+    mut gpu_handle: ResMut<GPUMapHandle>,
+
     mut map: ResMut<Map>,
-    mut texture_h: ResMut<TexturesHandle>,
 ) {
     println!("new game");
-    println!("{:?}", data.id_path);
-    println!("{:?}", data.texture_path);
+    if data.is_loaded(asset_server) {
+        load_images(data, gpu_maps, gpu_handle);
+    }
+}
 
-    let id = asset_server.load(AssetPath::from_path(Path::new(&data.id_path)));
-    let handle = provinces.add(Textures {
-        map_handle: id.clone(),
-        province_handle: asset_server.load(AssetPath::from_path(Path::new(&data.texture_path))),
-        selected_color: Vec4::new(0.0, 0.0, 0.0, 0.0),
-    });
+fn load_images(
+    data: &GameData,
+    gpu_maps: &mut Assets<GPUMap>,
+    mut gpu_handle: ResMut<GPUMapHandle>,
+) {
+    let handle = gpu_maps.add(GPUMap::new(data));
 
-    texture_h.0 = handle;
+    gpu_handle.0 = handle;
 }
 
 fn load_game_setup() {

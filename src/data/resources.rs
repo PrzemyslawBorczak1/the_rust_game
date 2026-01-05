@@ -1,11 +1,7 @@
-use bevy::{
-    prelude::*,
-    render::{render_phase::NonMeshEntities, render_resource::TextureFormat},
-};
-use image::Rgba;
-use std::collections::HashMap;
+use bevy::{prelude::*, render::render_resource::TextureFormat};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub enum TerrainType {
     #[default]
     Flat,
@@ -14,22 +10,22 @@ pub enum TerrainType {
     Water,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Province {
-    neighbours: Vec<[u8; 4]>,
     owner_id: u32,
     terrain_type: TerrainType,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Country {
     id: u32,
 }
 
 #[derive(Resource, Default, Debug)]
 pub struct Map {
-    province_id: HashMap<[u8; 4], Province>,
-    countries: HashMap<u32, Country>,
+    province_id: Vec<Province>,
+    countries: Vec<Country>,
+
     pub width: u32,
     pub height: u32,
     pixels: Vec<u8>,
@@ -84,6 +80,62 @@ impl Map {
 pub enum GameState {
     #[default]
     Menu,
-    StartGame,
+    LoadGame,
     Game,
 }
+
+
+
+
+
+
+
+
+#[derive(Debug, Default, Resource)]
+pub struct FetchGamePath {
+    pub id_texture: String,
+    pub province_texture: String,
+    pub vec_provinces: String,
+    pub vec_country: String,
+}
+
+#[derive(Debug, Default, Resource)]
+pub struct SaveGamePath {
+    pub id_texture: String,
+    pub province_texture: String,
+    pub vec_provinces: String,
+    pub vec_country: String,
+}
+
+#[derive(Debug, Clone, Asset, TypePath)]
+pub struct VecProvince(pub Vec<Province>);
+
+#[derive(Debug, Clone, Asset, TypePath)]
+pub struct VecCountry(pub Vec<Country>);
+
+#[derive(Debug, Resource, Default)]
+pub struct FetchHandles {
+    pub id_texture: Handle<Image>,
+    pub province_texture: Handle<Image>,
+
+    pub vec_provinces: Handle<VecProvince>,
+    pub vec_country: Handle<VecCountry>,
+}
+
+// impl GameData {
+//     pub fn is_loaded(&self, asset_server: Res<AssetServer>) -> bool {
+//         if asset_server.load_state(&self.id_path).is_loaded()
+//             && asset_server.load_state(&self.texture_path).is_loaded()
+//         {
+//             return true;
+//         }
+//         false
+//     }
+
+//     pub fn new(id_path: &String, texture_path: &String, asset_server: Res<AssetServer>) -> Self {
+//         Self {
+//             id_path: asset_server.load(AssetPath::from_path(Path::new(id_path))),
+//             texture_path: asset_server.load(AssetPath::from_path(Path::new(texture_path))),
+//         }
+//     }
+// }

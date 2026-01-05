@@ -1,14 +1,14 @@
 use bevy::{
-    camera::Viewport, math::ops::powf, prelude::*,
-    sprite_render::Material2dPlugin, window::WindowResized,
+    camera::Viewport, math::ops::powf, prelude::*, sprite_render::Material2dPlugin,
+    window::WindowResized,
 };
 
-use crate::data::{GameState, Map, Textures, TexturesHandle};
+use crate::data::{GPUMap, GPUMapHandle, GameState, Map};
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(Material2dPlugin::<Textures>::default())
+        app.add_plugins(Material2dPlugin::<GPUMap>::default())
             .add_systems(
                 OnEnter(GameState::Game),
                 (game_setup, on_resize_system).chain(),
@@ -29,7 +29,7 @@ fn game_setup(
     mut commands: Commands,
     map: Res<Map>,
     mut meshes: ResMut<Assets<Mesh>>,
-    texture: Res<TexturesHandle>,
+    texture: Res<GPUMapHandle>,
     window: Single<&Window>,
 ) {
     let window_size = window.resolution.physical_size();
@@ -51,8 +51,6 @@ fn game_setup(
         map.height as f32,
     )));
 
-
- 
     commands.spawn((Mesh2d(rect_handle), MeshMaterial2d(texture.0.clone())));
 }
 
@@ -74,7 +72,7 @@ fn controls(
             projection2d.scale *= powf(0.25f32, delta);
         }
 
-        // todo 
+        // todo
         let viewport_size = camera
             .viewport
             .as_ref()
@@ -140,8 +138,8 @@ fn select_province(
     mouse_input: Res<ButtonInput<MouseButton>>,
 
     map: Res<Map>,
-    material_handle: Res<TexturesHandle>,
-    mut materials: ResMut<Assets<Textures>>,
+    material_handle: Res<GPUMapHandle>,
+    mut materials: ResMut<Assets<GPUMap>>,
 ) {
     let (camera, camera_transform) = *camera_query;
 
@@ -153,12 +151,17 @@ fn select_province(
                 if let Some(province_color) = map.get_color(world_pos.x, world_pos.y) {
                     println!("Selected province RGBA: {:?}", province_color);
                     if let Some(material) = materials.get_mut(&material_handle.0) {
-                        material.selected_color = Vec4::new(
+                        let new = Vec4::new(
                             province_color[0] as f32 / 255.0,
                             province_color[1] as f32 / 255.0,
                             province_color[2] as f32 / 255.0,
                             province_color[3] as f32 / 255.0,
                         );
+                        if material.selected_color == new {
+                            material.selected_color = Vec4::new(0.0, 0.0, 0.0, 0.0);
+                        } else {
+                            material.selected_color = new;
+                        }
                     } else {
                         println!("No province color found at position");
                     }
