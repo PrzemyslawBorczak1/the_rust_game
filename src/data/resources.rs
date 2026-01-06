@@ -22,59 +22,54 @@ pub struct Country {
 }
 
 #[derive(Resource, Default, Debug)]
-pub struct Map {
-    province_id: Vec<Province>,
+pub struct GameWorld {
+    provinces: Vec<Province>,
     countries: Vec<Country>,
-
-    pub width: u32,
-    pub height: u32,
-    pixels: Vec<u8>,
-    ready: bool,
 }
 // todo error
-impl Map {
-    pub fn set_map_from_image(&mut self, images: &Assets<Image>, handle: &Handle<Image>) {
-        if let Some(image) = images.get(handle) {
-            self.width = image.texture_descriptor.size.width;
-            self.height = image.texture_descriptor.size.height;
+// impl Map {
+//     pub fn set_map_from_image(&mut self, images: &Assets<Image>, handle: &Handle<Image>) {
+//         if let Some(image) = images.get(handle) {
+//             self.width = image.texture_descriptor.size.width;
+//             self.height = image.texture_descriptor.size.height;
 
-            let format = Some(image.texture_descriptor.format);
+//             let format = Some(image.texture_descriptor.format);
 
-            if Some(TextureFormat::Rgba8Unorm) != format {
-                eprintln!(
-                    "Warning: Expected Rgba8Unorm, got {:?}",
-                    image.texture_descriptor.format
-                );
-            }
+//             if Some(TextureFormat::Rgba8Unorm) != format {
+//                 eprintln!(
+//                     "Warning: Expected Rgba8Unorm, got {:?}",
+//                     image.texture_descriptor.format
+//                 );
+//             }
 
-            if let Some(data) = &image.data {
-                self.pixels = data.clone();
-            }
-            self.ready = true;
-        }
+//             if let Some(data) = &image.data {
+//                 self.pixels = data.clone();
+//             }
+//             self.ready = true;
+//         }
 
-        println!("{:?}", self.width);
-        println!("{:?}", self.height);
-    }
-    pub fn get_color(&self, x: f32, y: f32) -> Option<[u8; 4]> {
-        let ix = (x + self.width as f32 / 2.0).round() as i32;
-        let iy = (self.height as f32 / 2.0 - y).round() as i32;
+//         println!("{:?}", self.width);
+//         println!("{:?}", self.height);
+//     }
+//     pub fn get_color(&self, x: f32, y: f32) -> Option<[u8; 4]> {
+//         let ix = (x + self.width as f32 / 2.0).round() as i32;
+//         let iy = (self.height as f32 / 2.0 - y).round() as i32;
 
-        if ix < 0 || iy < 0 || ix >= self.width as i32 || iy >= self.height as i32 {
-            return None;
-        }
+//         if ix < 0 || iy < 0 || ix >= self.width as i32 || iy >= self.height as i32 {
+//             return None;
+//         }
 
-        let idx = (iy as u32 * self.width + ix as u32) as usize * 4;
+//         let idx = (iy as u32 * self.width + ix as u32) as usize * 4;
 
-        self.pixels
-            .get(idx..idx + 4)
-            .and_then(|b| b.try_into().ok())
-    }
+//         self.pixels
+//             .get(idx..idx + 4)
+//             .and_then(|b| b.try_into().ok())
+//     }
 
-    pub fn is_ready(&self) -> bool {
-        self.ready
-    }
-}
+//     pub fn is_ready(&self) -> bool {
+//         self.ready
+//     }
+// }
 
 #[derive(States, Debug, Hash, Eq, PartialEq, Clone, Default)]
 pub enum GameState {
@@ -107,18 +102,17 @@ pub struct VecProvince(pub Vec<Province>);
 pub struct VecCountry(pub Vec<Country>);
 
 #[derive(Debug, Clone, Asset, TypePath)]
-pub struct IdMap{
-    pub width : u32,
+pub struct IdMap {
+    pub width: u32,
     pub height: u32,
     pub map: Vec<u32>,
+    pub adjacency: Vec<Vec<u32>>,
 }
-
-
 
 #[derive(Debug, Resource, Default)]
 pub struct FetchHandles {
     pub province_texture: Handle<Image>,
-    
+
     pub id_map: Handle<IdMap>,
     pub vec_provinces: Handle<VecProvince>,
     pub vec_country: Handle<VecCountry>,

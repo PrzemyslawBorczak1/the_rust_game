@@ -93,10 +93,10 @@ pub mod id_map {
         #[error(transparent)]
         Image(#[from] image::ImageError),
 
-        #[error("val {value}; idx {max}   width: {width} height: {height}")]
+        #[error("val: {value} idx: {idx}  width: {width} height: {height}")]
         InvalidProvinceId {
             value: u32,
-            max: u32,
+            idx: u32,
             width: u32,
             height: u32,
         },
@@ -124,25 +124,67 @@ pub mod id_map {
 
             let width = rgba.width();
             let height = rgba.height();
+            let mut max_id: usize = 0;
 
             let pixels: Vec<u32> = rgba
                 .pixels()
                 .map(|px| {
                     let g = px[1] as u32;
                     let b = px[2] as u32;
-                    (g << 8) | b
+                    let id = (g << 8) | b;
+                    max_id = max_id.max(id as usize);
+                    id
                 })
                 .collect();
+
+            
+            let mut adjacency = vec![vec![]; max_id + 1];
+
+            find_adjacent_provinces(&mut adjacency, &pixels, width, height);
 
             return Ok(IdMap {
                 width,
                 height,
                 map: pixels,
+                adjacency,
             });
         }
 
         fn extensions(&self) -> &[&str] {
             &["json"]
+        }
+    }
+
+    fn find_adjacent_provinces(
+        adjacency: &mut Vec<Vec<u32>>,
+        pixels: &Vec<u32>,
+        width: u32,
+        height: u32,
+    ) {
+        for y in 0..(height - 1) {
+            for x in 0..(width - 1) {
+                let current = pixels[(y * width + x) as usize];
+                let right = pixels[(y * width + x + 1) as usize];
+                let down = pixels[((y + 1) * width + x) as usize];
+
+                if current != right {
+                    add_adjacent(adjacency, current, right);
+                }
+
+                if current != down {
+                    add_adjacent(adjacency, current, down);
+                }
+            }
+        }
+    }
+
+    fn add_adjacent(adjacency: &mut Vec<Vec<u32>>, id1: u32, id2: u32) {
+        if !adjacency[id1 as usize].contains(&id2) {
+            adjacency[id1 as usize].push(id2);
+        }
+
+        if !adjacency[id2 as usize].contains(&id1) {
+            adjacency[id2 as usize].push(id1);
         }
     }
 }

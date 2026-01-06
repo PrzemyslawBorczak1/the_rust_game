@@ -54,6 +54,7 @@ fn look(
         println!("Map:");
         println!("{:#?}", map.width);
         println!("{:#?}", map.height);
+        println!("{:#?}", map.adjacency)
     } else {
         println!("map still loading");
         return;
