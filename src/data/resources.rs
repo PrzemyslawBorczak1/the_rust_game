@@ -1,30 +1,132 @@
-use bevy::{prelude::*, render::render_resource::TextureFormat};
+use anyhow::Result;
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub enum TerrainType {
-    #[default]
-    Flat,
-    Forest,
-    Mountain,
-    Water,
+pub use country::*;
+pub use id_map::*;
+pub use province::*;
+pub use textures::*;
+
+pub mod province {
+    use super::*;
+
+    #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+    pub enum TerrainType {
+        #[default]
+        Flat,
+        Forest,
+        Mountain,
+        Water,
+    }
+
+    #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+    pub struct Province {
+        owner_id: u32,
+        terrain_type: TerrainType,
+    }
+    #[derive(Debug, Clone, Asset, TypePath)]
+    pub struct VecProvince(pub Vec<Province>);
+    impl VecProvince {
+        pub fn deserialize(path_in_assets: &String) -> Result<Self> {
+            let path = Path::new("assets").join(path_in_assets);
+            let bytes = std::fs::read(path)?;
+            let provinces: Vec<Province> = serde_json::from_slice(&bytes)?;
+            Ok(Self(provinces))
+        }
+    }
+
+    #[derive(Resource, Default)]
+    pub struct VecProvinceHandle(pub Handle<VecProvince>);
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct Province {
-    owner_id: u32,
-    terrain_type: TerrainType,
+pub mod country {
+    use bevy::render::render_resource::ShaderType;
+
+    use super::*;
+    #[derive(States, Debug, Hash, Eq, PartialEq, Clone, Default)]
+    pub enum CountryLoadingState {
+        Loaded,
+        #[default]
+        Loading,
+    }
+    #[derive(Debug, Default, Clone, Serialize, Deserialize, ShaderType)]
+    pub struct Country {
+        id: u32,
+    }
+
+    #[derive(Debug, Clone, Asset, TypePath)]
+    pub struct VecCountry(pub Vec<Country>);
+    impl VecCountry {
+        pub fn deserialize(path_in_assets: &String) -> Result<Self> {
+            let path = Path::new("assets").join(path_in_assets);
+            let bytes = std::fs::read(path)?;
+            let country: Vec<Country> = serde_json::from_slice(&bytes)?;
+            Ok(Self(country))
+        }
+    }
+
+    #[derive(Resource, Default)]
+    pub struct VecCountryHandle(pub Handle<VecCountry>);
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct Country {
-    id: u32,
+pub mod id_map {
+    use super::*;
+    #[derive(Debug, Clone, Asset, TypePath, Default)]
+    pub struct IdMap {
+        pub width: u32,
+        pub height: u32,
+        pub map: Vec<u32>,
+        pub adjacency: Vec<Vec<u32>>,
+    }
+
+    #[derive(Resource, Default)]
+    pub struct IdMapHandle(pub Handle<IdMap>);
+}
+
+pub mod textures {
+    pub use super::*;
+
+    #[derive(Debug, Clone, Asset, TypePath, Default)]
+    pub struct Textures {
+        pub province: Handle<Image>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct Paths {
+        province: String,
+    }
+
+    impl Textures {
+        pub fn from(path_in_assets: &String, asset_server: &AssetServer) -> Result<Self> {
+            let path = Path::new("assets").join(path_in_assets);
+            let bytes = std::fs::read(path)?;
+            let paths: Paths = serde_json::from_slice(&bytes)?;
+            let mut ret = Textures::default();
+
+            ret.province = asset_server.load(paths.province);
+
+            Ok(ret)
+        }
+
+        pub fn is_loaded(&self, images: Res<Assets<Image>>) -> bool {
+            if let Some(_) = images.get(self.province.id()) {
+                return true;
+            }
+            false
+        }
+    }
+
+    #[derive(Resource, Default)]
+    pub struct TexturesHandle(pub Handle<Textures>);
 }
 
 #[derive(Resource, Default, Debug)]
 pub struct GameWorld {
-    provinces: Vec<Province>,
-    countries: Vec<Country>,
+    pub provinces: Vec<Province>,
+    pub countries: Vec<Country>,
+
+    pub id: IdMap,
 }
 // todo error
 // impl Map {
@@ -95,20 +197,6 @@ pub struct SaveGamePath {
     pub vec_country: String,
 }
 
-#[derive(Debug, Clone, Asset, TypePath)]
-pub struct VecProvince(pub Vec<Province>);
-
-#[derive(Debug, Clone, Asset, TypePath)]
-pub struct VecCountry(pub Vec<Country>);
-
-#[derive(Debug, Clone, Asset, TypePath)]
-pub struct IdMap {
-    pub width: u32,
-    pub height: u32,
-    pub map: Vec<u32>,
-    pub adjacency: Vec<Vec<u32>>,
-}
-
 #[derive(Debug, Resource, Default)]
 pub struct FetchHandles {
     pub province_texture: Handle<Image>,
@@ -117,21 +205,3 @@ pub struct FetchHandles {
     pub vec_provinces: Handle<VecProvince>,
     pub vec_country: Handle<VecCountry>,
 }
-
-// impl GameData {
-//     pub fn is_loaded(&self, asset_server: Res<AssetServer>) -> bool {
-//         if asset_server.load_state(&self.id_path).is_loaded()
-//             && asset_server.load_state(&self.texture_path).is_loaded()
-//         {
-//             return true;
-//         }
-//         false
-//     }
-
-//     pub fn new(id_path: &String, texture_path: &String, asset_server: Res<AssetServer>) -> Self {
-//         Self {
-//             id_path: asset_server.load(AssetPath::from_path(Path::new(id_path))),
-//             texture_path: asset_server.load(AssetPath::from_path(Path::new(texture_path))),
-//         }
-//     }
-// }

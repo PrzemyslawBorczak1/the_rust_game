@@ -1,7 +1,7 @@
 use crate::data::{FetchGamePath, GameState, SaveGamePath};
 use bevy::prelude::*;
 use seters::*;
-use ui::*;
+pub use ui::*;
 
 pub struct MenuPlugin;
 
