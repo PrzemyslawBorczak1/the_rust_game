@@ -1,7 +1,7 @@
 use bevy::{prelude::*, render::render_resource::ShaderType};
 use serde::{Deserialize, Serialize};
 
-use crate::data::GPUMaterial;
+use crate::data::gpu::*;
 
 #[derive(States, Debug, Hash, Eq, PartialEq, Clone, Default)]
 pub enum GameState {
@@ -84,6 +84,9 @@ impl GameWorld {
         };
 
         if let Some(id) = self.get_id(x, y) {
+            if gpu.selected_id == id {
+                gpu.selected_id = NO_SELECTED_ID;
+            }
             gpu.selected_id = id;
         }
     }

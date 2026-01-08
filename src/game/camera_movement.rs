@@ -57,16 +57,16 @@ fn controls(
 
         let fspeed = 600.0 * delta * projection2d.scale;
 
-        if input.pressed(KeyCode::KeyI) {
+        if input.pressed(KeyCode::KeyW) {
             transform.translation.y += fspeed;
         }
-        if input.pressed(KeyCode::KeyK) {
+        if input.pressed(KeyCode::KeyS) {
             transform.translation.y -= fspeed;
         }
-        if input.pressed(KeyCode::KeyJ) {
+        if input.pressed(KeyCode::KeyA) {
             transform.translation.x -= fspeed;
         }
-        if input.pressed(KeyCode::KeyL) {
+        if input.pressed(KeyCode::KeyD) {
             transform.translation.x += fspeed;
         }
 

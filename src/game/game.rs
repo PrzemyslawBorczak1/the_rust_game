@@ -1,6 +1,9 @@
 use bevy::{app::PluginGroupBuilder, prelude::*};
 
-use crate::game::{camera_movement::CameraMovementPlugin, mouse_click::MouseClickPlugin};
+use crate::game::{
+    camera_movement::CameraMovementPlugin, interface::InterfacePlugin,
+    mouse_click::MouseClickPlugin,
+};
 
 use super::create_scene::CreateScenePlugin;
 pub struct GamePlugin;
@@ -11,5 +14,9 @@ impl PluginGroup for GamePlugin {
             .add(CreateScenePlugin)
             .add(CameraMovementPlugin)
             .add(MouseClickPlugin)
+            .add(InterfacePlugin)
     }
 }
+
+
+

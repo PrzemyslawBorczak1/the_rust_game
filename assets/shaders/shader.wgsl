@@ -20,12 +20,13 @@ struct Country{
 @group(#{MATERIAL_BIND_GROUP}) @binding(5) var<storage, read> countries: array<Country>;
 
 @group(#{MATERIAL_BIND_GROUP}) @binding(6) var<uniform> selected_id: u32;
-@group(#{MATERIAL_BIND_GROUP}) @binding(7) var<uniform> draw_type: u32;
+@group(#{MATERIAL_BIND_GROUP}) @binding(7) var<uniform> draw_mode: u32;
 
 
 
 const Political: u32 = 0u;
 const Geographical: u32 = 1u;
+const NO_ID_SELECTED: u32 = 213767u;
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4f {
@@ -35,11 +36,11 @@ fn fragment(in: VertexOutput) -> @location(0) vec4f {
     let acc: u32 = y * width + x;
 	let province_id = id[acc];
 
-	if selected_id == province_id{
+	if selected_id == province_id && selected_id != NO_ID_SELECTED{
 		return  vec4f(1.0, 1.0, 1.0, 1.0);
 	}
 	
-    switch Geographical{
+    switch draw_mode{
         case Political:{
             return political(id[acc]);
         }

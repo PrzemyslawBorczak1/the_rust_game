@@ -5,6 +5,7 @@ use bevy::shader::ShaderRef;
 use bevy::sprite_render::Material2d;
 
 use bevy::reflect::TypePath;
+pub const NO_SELECTED_ID: u32 = 213767;
 
 #[derive(AsBindGroup, Debug, Clone, Asset, TypePath)]
 pub struct GPUMaterial {
