@@ -16,7 +16,7 @@ impl Plugin for AddGPUPlugin {
 }
 
 fn add_gpu(
-    world: Res<GameWorld>,
+    mut world: ResMut<GameWorld>,
 
     mut gpu_materials: ResMut<Assets<GPUMaterial>>,
     mut gpu_handle: ResMut<GPUMaterialHandle>,
@@ -34,4 +34,6 @@ fn add_gpu(
     };
 
     gpu_handle.0 = gpu_materials.add(material);
+
+    world.gpu = gpu_handle.0.clone();
 }

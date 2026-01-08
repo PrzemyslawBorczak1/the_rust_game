@@ -1,5 +1,6 @@
 use super::loading_error;
-use crate::data::resources::{FetchGamePath, GameState, country::*};
+use super::resources::*;
+use crate::data::resources::{FetchGamePath, GameState};
 use anyhow::{Context, Result};
 use bevy::prelude::*;
 

@@ -27,7 +27,6 @@ fn copy_to_gpu(
     if let Some(gpu) = gpu_materials.get_mut(gpu_handle.0.id()) {
         if let Some(country) = buffers.get_mut(gpu.countries.id()) {
             *country = ShaderStorageBuffer::from(world.countries.clone());
-            println!("Copied\n\\n\n");
         }
     }
 }
@@ -38,6 +37,7 @@ fn create_scene(
     mut meshes: ResMut<Assets<Mesh>>,
 
     window: Single<&Window>,
+    world: Res<GameWorld>,
 ) {
     let window_size = window.resolution.physical_size();
 
@@ -53,8 +53,10 @@ fn create_scene(
         },
     ));
 
-    let rect_handle = meshes.add(Rectangle::from_size(Vec2::new(1000.0, 600.0)));
+    let rect_handle = meshes.add(Rectangle::from_size(Vec2::new(
+        world.width() as f32,
+        world.height() as f32,
+    )));
 
     commands.spawn((Mesh2d(rect_handle), MeshMaterial2d(gpu_handle.0.clone())));
-    println!("Scena niby created");
 }

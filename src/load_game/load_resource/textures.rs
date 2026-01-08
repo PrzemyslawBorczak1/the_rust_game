@@ -1,5 +1,6 @@
 use super::loading_error;
-use crate::data::resources::{FetchGamePath, GameState, textures::*};
+use super::resources::*;
+use crate::data::resources::{FetchGamePath, GameState};
 use anyhow::Result;
 use bevy::prelude::*;
 
@@ -15,7 +16,7 @@ pub struct LoadTexturesPlugin;
 impl Plugin for LoadTexturesPlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<TexturesLoadingState>()
-            .init_asset::<Textures>()
+            .init_asset::<TexturesAsset>()
             .init_resource::<TexturesHandle>()
             .add_systems(
                 OnEnter(GameState::LoadGame),
@@ -29,18 +30,18 @@ impl Plugin for LoadTexturesPlugin {
 }
 
 fn load_texture(
-    mut assets: ResMut<Assets<Textures>>,
+    mut assets: ResMut<Assets<TexturesAsset>>,
     mut handle: ResMut<TexturesHandle>,
     path: Res<FetchGamePath>,
     asset_server: Res<AssetServer>,
 ) -> Result<()> {
-    let asset = Textures::from(&path.province_texture, &*asset_server)?;
+    let asset = TexturesAsset::from(&path.province_texture, &*asset_server)?;
     handle.0 = assets.add(asset);
     Ok(())
 }
 
 fn consolidate(
-    assets: Res<Assets<Textures>>,
+    assets: Res<Assets<TexturesAsset>>,
     handle: Res<TexturesHandle>,
     images: Res<Assets<Image>>,
     mut state: ResMut<NextState<TexturesLoadingState>>,

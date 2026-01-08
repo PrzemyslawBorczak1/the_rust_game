@@ -1,8 +1,10 @@
-use crate::data::resources::{FetchGamePath, GameState, id_map::*};
+use crate::data::resources::{FetchGamePath, GameState};
 use bevy::prelude::*;
 
 use bevy::asset::{AssetLoader, LoadContext, io::Reader};
 use thiserror::Error;
+
+use super::resources::*;
 
 use crate::data::IdMap;
 
@@ -17,8 +19,7 @@ pub struct LoadIdMapPlugin;
 
 impl Plugin for LoadIdMapPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .init_state::<IdMapLoadingState>()
+        app.init_state::<IdMapLoadingState>()
             .init_asset::<IdMap>()
             .init_resource::<IdMapHandle>()
             .init_asset_loader::<IdMapLoader>()

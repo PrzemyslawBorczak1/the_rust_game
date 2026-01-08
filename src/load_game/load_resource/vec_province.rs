@@ -1,7 +1,9 @@
 use super::loading_error;
-use crate::data::resources::{FetchGamePath, GameState, province::*};
+use crate::data::resources::{FetchGamePath, GameState};
 use anyhow::{Context, Result};
 use bevy::prelude::*;
+
+use super::resources::*;
 
 #[derive(States, Debug, Hash, Eq, PartialEq, Clone, Default)]
 pub enum ProvinceLoadingState {

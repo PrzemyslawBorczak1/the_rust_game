@@ -1,3 +1,4 @@
+use super::load_resource::*;
 use crate::data::{GameWorld, resources::*};
 use bevy::prelude::*;
 
@@ -21,6 +22,7 @@ impl Plugin for FinishLoadingPlugin {
     }
 }
 
+// add textures asset
 fn finish(
     prov: Res<Assets<VecProvince>>,
     prov_handle: Res<VecProvinceHandle>,
@@ -31,24 +33,31 @@ fn finish(
     map: Res<Assets<IdMap>>,
     map_handle: Res<IdMapHandle>,
 
+    textures: Res<Assets<TexturesAsset>>,
+    textures_handle: Res<TexturesHandle>,
+
     mut world: ResMut<GameWorld>,
     mut loading_state: ResMut<NextState<LoadingState>>,
-    mut game_state: ResMut<NextState<GameState>>,
     mut commands: Commands,
 ) {
     if let Some(prov) = prov.get(prov_handle.0.id()) {
         if let Some(country) = countries.get(country_handle.0.id()) {
             if let Some(map) = map.get(map_handle.0.id()) {
-                world.provinces = prov.0.clone();
-                world.countries = country.0.clone();
+                if let Some(textures_asset) = textures.get(textures_handle.0.id()) {
+                    world.provinces = prov.0.clone();
+                    world.countries = country.0.clone();
 
-                world.id = map.clone();
-                commands.remove_resource::<VecProvinceHandle>();
-                commands.remove_resource::<VecCountryHandle>();
-                commands.remove_resource::<IdMapHandle>();
+                    world.id = map.clone();
+                    commands.remove_resource::<VecProvinceHandle>();
+                    commands.remove_resource::<VecCountryHandle>();
+                    commands.remove_resource::<IdMapHandle>();
+                    commands.remove_resource::<TexturesHandle>();
 
-                loading_state.set(LoadingState::Finished);
-                println!("\n\nFinished\n\n");
+                    commands.insert_resource(textures_asset.clone().as_resource());
+
+                    loading_state.set(LoadingState::Finished);
+                    println!("\n\nFinished\n\n");
+                }
             }
         }
     }

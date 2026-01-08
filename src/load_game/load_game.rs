@@ -1,5 +1,5 @@
-use crate::load_game::{finish::FinishLoadingPlugin, gpu::AddGPUPlugin};
 use crate::load_game::graphics::LoadingGraphicsPlugin;
+use crate::load_game::{finish::FinishLoadingPlugin, add_gpu::AddGPUPlugin};
 
 use super::load_resource::*;
 use bevy::{app::PluginGroupBuilder, prelude::*};
