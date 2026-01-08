@@ -48,7 +48,6 @@ fn finish(
                 commands.remove_resource::<IdMapHandle>();
 
                 loading_state.set(LoadingState::Finished);
-                game_state.set(GameState::Game);
                 println!("\n\nFinished\n\n");
             }
         }

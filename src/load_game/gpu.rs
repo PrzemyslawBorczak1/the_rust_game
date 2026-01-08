@@ -1,8 +1,9 @@
 use bevy::{prelude::*, render::storage::ShaderStorageBuffer};
 
-use crate::data::{GPUMaterial, GPUMaterialHandle, GameWorld};
-
-use super::finish::LoadingState;
+use crate::{
+    data::{GPUMaterial, GPUMaterialHandle, GameWorld},
+    load_game::finish::LoadingState,
+};
 
 pub struct AddGPUPlugin;
 
@@ -33,5 +34,4 @@ fn add_gpu(
     };
 
     gpu_handle.0 = gpu_materials.add(material);
-
 }

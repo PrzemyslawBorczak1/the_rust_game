@@ -1,10 +1,7 @@
-use crate::load_game::gpu::AddGPUPlugin;
+use crate::load_game::{finish::FinishLoadingPlugin, gpu::AddGPUPlugin};
+use crate::load_game::graphics::LoadingGraphicsPlugin;
 
-use super::finish::*;
-use super::id_map::*;
-use super::textures::*;
-use super::vec_country::*;
-use super::vec_province::*;
+use super::load_resource::*;
 use bevy::{app::PluginGroupBuilder, prelude::*};
 use to_delete::*;
 pub struct LoadGamePlugin;
@@ -13,21 +10,13 @@ impl PluginGroup for LoadGamePlugin {
     fn build(self) -> PluginGroupBuilder {
         PluginGroupBuilder::start::<Self>()
             .add(SkipToLoad)
+            .add(LoadingGraphicsPlugin)
             .add(LoadVecProvincePlugin)
             .add(LoadVecCountryPlugin)
             .add(LoadIdMapPlugin)
             .add(LoadTexturesPlugin)
-            .add(FinishLoadingPlugin)
             .add(AddGPUPlugin)
-    }
-}
-
-pub fn loading_error(In(result): In<anyhow::Result<()>>) {
-    match result {
-        Ok(_) => {}
-        Err(e) => {
-            error!("Loading error occurred: {:#}", e);
-        }
+            .add(FinishLoadingPlugin)
     }
 }
 
@@ -37,6 +26,7 @@ mod to_delete {
 
     use crate::{
         data::{FetchGamePath, GameState, SaveGamePath},
+        load_game::graphics::LoadingGraphics,
         menu::MenuState,
     };
 
@@ -55,10 +45,12 @@ mod to_delete {
         save: ResMut<SaveGamePath>,
         mut game_state: ResMut<NextState<GameState>>,
         mut menu_state: ResMut<NextState<MenuState>>,
+        mut graphics_state: ResMut<NextState<LoadingGraphics>>,
     ) {
         set_data(fetch, save);
         game_state.set(GameState::LoadGame);
         menu_state.set(MenuState::Disabled);
+        graphics_state.set(LoadingGraphics::Show);
     }
 
     // todo delete
