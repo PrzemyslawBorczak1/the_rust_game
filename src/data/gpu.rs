@@ -35,7 +35,7 @@ pub struct GPUMaterial {
 
 impl Material2d for GPUMaterial {
     fn fragment_shader() -> ShaderRef {
-        "shaders/test2.wgsl".into()
+        "shaders/shader.wgsl".into()
     }
 }
 

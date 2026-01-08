@@ -28,6 +28,9 @@ fn copy_to_gpu(
         if let Some(country) = buffers.get_mut(gpu.countries.id()) {
             *country = ShaderStorageBuffer::from(world.countries.clone());
         }
+        if let Some(provinces) = buffers.get_mut(gpu.provinces.id()) {
+            *provinces = ShaderStorageBuffer::from(world.provinces.clone());
+        }
     }
 }
 

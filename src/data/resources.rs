@@ -11,19 +11,17 @@ pub enum GameState {
     Game,
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub enum TerrainType {
-    #[default]
-    Flat,
-    Forest,
-    Mountain,
-    Water,
+pub mod terrain_type {
+    pub const Flat: u32 = 1;
+    pub const Forest: u32 = 2;
+    pub const Mountain: u32 = 3;
+    pub const Water: u32 = 4;
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, ShaderType)]
 pub struct Province {
     owner_id: u32,
-    terrain_type: TerrainType,
+    terrain_type: u32,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, ShaderType)]
@@ -87,7 +85,7 @@ impl GameWorld {
 
         if let Some(id) = self.get_id(x, y) {
             gpu.selected_id = id;
-        } 
+        }
     }
 }
 

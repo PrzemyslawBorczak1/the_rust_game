@@ -7,6 +7,8 @@ use the_rust_game::load_game::LoadGamePlugin;
 use the_rust_game::menu::MenuPlugin;
 
 fn main() {
+
+
     App::new()
         .add_plugins(DefaultPlugins)
         .init_state::<GameState>()
@@ -15,3 +17,5 @@ fn main() {
          .add_plugins(GamePlugin)
         .run();
 }
+
+
