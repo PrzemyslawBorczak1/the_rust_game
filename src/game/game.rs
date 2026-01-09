@@ -14,7 +14,7 @@ impl PluginGroup for GamePlugin {
             .add(CreateScenePlugin)
             .add(CameraMovementPlugin)
             .add(MouseClickPlugin)
-            .add(InterfacePlugin)
+            .add_group(InterfacePlugin)
     }
 }
 
