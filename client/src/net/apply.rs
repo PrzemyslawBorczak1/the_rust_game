@@ -32,12 +32,11 @@ pub fn apply(
         match bevy_in.try_recv() {
             Ok(ClientEvent::Line(line)) => match CommandClient::deserialize(&line) {
                 Ok(cmd) => {
-                   
                     cmd.execute(
                         &mut world,
                         &mut commands,
                         gpu_materials.get_mut(&handle.0),
-                        &mut handle.0,
+                        &mut handle,
                         &mut *buffers,
                         &mut meshes,
                     );

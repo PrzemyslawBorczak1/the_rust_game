@@ -125,7 +125,7 @@ fn country_meta_text() -> impl Bundle {
     )
 }
 
-pub fn province_data() -> impl Bundle {
+pub fn province_meta_text() -> impl Bundle {
     (
         Text::new("Province"),
         TextFont {

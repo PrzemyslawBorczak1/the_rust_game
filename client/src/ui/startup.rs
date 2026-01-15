@@ -13,11 +13,11 @@ impl Plugin for StartupPlugin {
             .init_asset::<GPUMaterial>()
             .add_plugins(Material2dPlugin::<GPUMaterial>::default())
             .add_systems(Startup, create_scene)
-            .add_systems(Startup, add_gpu);
+            .add_systems(Startup, add_empty_gpu_material);
     }
 }
 
-fn add_gpu(
+fn add_empty_gpu_material(
     world: Res<GameWorld>,
 
     mut gpu_materials: ResMut<Assets<GPUMaterial>>,

@@ -6,6 +6,8 @@ use bevy::sprite_render::Material2d;
 
 use bevy::reflect::TypePath;
 pub const NO_SELECTED_ID: u32 = 213767;
+pub const GEOGRAPHICAL_DRAW: u32 = 0;
+pub const POLITICAL_DRAW: u32 = 1;
 
 #[derive(AsBindGroup, Debug, Clone, Asset, TypePath)]
 pub struct GPUMaterial {

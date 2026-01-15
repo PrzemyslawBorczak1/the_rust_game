@@ -1,4 +1,5 @@
 use crate::ui::gpu::GPUMaterialHandle;
+use crate::ui::{GEOGRAPHICAL_DRAW, POLITICAL_DRAW};
 
 use super::super::super::gpu::GPUMaterial;
 use super::super::common::InterfaceState;
@@ -18,7 +19,6 @@ impl Plugin for RightPanelFunctionalityPlugin {
     }
 }
 
-/// todo change to proper gpu setting
 pub fn on_political_click(
     mut q: Query<&Interaction, (Changed<Interaction>, With<Button>, With<SetPoliticalButton>)>,
     mut materials: ResMut<Assets<GPUMaterial>>,
@@ -27,9 +27,9 @@ pub fn on_political_click(
     for interaction in &mut q {
         if *interaction == Interaction::Pressed {
             if let Some(gpu) = materials.get_mut(handle.0.id()) {
-                gpu.draw_type = 1 - gpu.draw_type;
+                gpu.draw_type = POLITICAL_DRAW;
+                println!("{}", gpu.selected_id);
             }
-            info!("Political button clicked");
         }
     }
 }
@@ -49,9 +49,9 @@ pub fn on_geographical_click(
     for interaction in &mut q {
         if *interaction == Interaction::Pressed {
             if let Some(gpu) = materials.get_mut(handle.0.id()) {
-                gpu.draw_type = 1 - gpu.draw_type;
+                gpu.draw_type = GEOGRAPHICAL_DRAW;
+                println!("{}", gpu.selected_id);
             }
-            info!("Geographical button clicked");
         }
     }
 }

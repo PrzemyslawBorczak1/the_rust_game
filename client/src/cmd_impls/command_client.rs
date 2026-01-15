@@ -8,7 +8,7 @@ pub trait Execute {
         world: &mut GameWorld,
         commands: &mut Commands,
         gpu_materials: Option<&mut GPUMaterial>,
-        handle: &mut Handle<GPUMaterial>,
+        handle: &mut GPUMaterialHandle,
         buffers: &mut Assets<ShaderStorageBuffer>,
         meshes: &mut Assets<Mesh>,
     );
@@ -20,7 +20,7 @@ impl Execute for CommandClient {
         world: &mut GameWorld,
         commands: &mut Commands,
         gpu_materials: Option<&mut GPUMaterial>,
-        handle: &mut Handle<GPUMaterial>,
+        handle: &mut GPUMaterialHandle,
         buffers: &mut Assets<ShaderStorageBuffer>,
 
         meshes: &mut Assets<Mesh>,

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::ui::FocusPolicy;
 
 use super::super::common::*;
 use super::left_panel::left_panel;
@@ -17,6 +18,7 @@ fn interface_stratup(mut commands: Commands, mut visibility: ResMut<NextState<In
     commands.spawn((
         InterfaceRoot,
         Visibility::Visible,
+        FocusPolicy::Block,
         root_node(),
         children![left_panel(), right_panel()],
     ));

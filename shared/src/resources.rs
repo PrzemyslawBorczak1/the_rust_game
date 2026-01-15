@@ -17,7 +17,6 @@ pub struct Province {
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, ShaderType)]
 pub struct Country {
-    pub id: u32,
     pub color: Vec4,
 }
 
@@ -66,5 +65,16 @@ impl GameWorld {
 
             id: self.id.clone(),
         }
+    }
+
+    pub fn get_province(&self, index: u32) -> Option<&Province> {
+        self.provinces.get(index as usize)
+    }
+
+    pub fn get_country(&self, province_index: u32) -> Option<&Country> {
+        if let Some(p) = self.provinces.get(province_index as usize) {
+            return self.countries.get(p.owner_id as usize);
+        }
+        None
     }
 }

@@ -10,15 +10,13 @@ impl Execute for Init {
         world: &mut GameWorld,
         commands: &mut Commands,
         gpu_materials: Option<&mut GPUMaterial>,
-        handle: &mut Handle<GPUMaterial>,
+        handle: &mut GPUMaterialHandle,
         buffers: &mut Assets<ShaderStorageBuffer>,
         meshes: &mut Assets<Mesh>,
     ) {
         *world = self.world;
 
         if let Some(gpu) = gpu_materials {
-            print!("set");
-
             gpu.width = world.id.width;
             gpu.height = world.id.height;
 
@@ -31,7 +29,17 @@ impl Execute for Init {
             world.height() as f32,
         )));
 
-        commands.spawn((Mesh2d(rect_handle), MeshMaterial2d(handle.clone())));
+        commands.spawn((Mesh2d(rect_handle), MeshMaterial2d(handle.0.clone())));
+
+        let mut v = vec![];
+        world.id.map.iter().for_each(|val| {
+            if !v.contains(val) {
+                v.push(*val);
+            }
+        });
+        info!["vals: {v:?}"];
+        info!["vals: {:#?}", world.provinces];
+        info!["vals: {:#?}", world.countries];
     }
 }
 

@@ -14,7 +14,6 @@ struct Province{
  @group(#{MATERIAL_BIND_GROUP}) @binding(4) var<storage, read> provinces: array<Province>;
 
 struct Country{
-	id: u32,
     color: vec4f,
 }
 @group(#{MATERIAL_BIND_GROUP}) @binding(5) var<storage, read> countries: array<Country>;
@@ -24,9 +23,10 @@ struct Country{
 
 
 
-const Political: u32 = 0u;
-const Geographical: u32 = 1u;
-const NO_ID_SELECTED: u32 = 213767u;
+
+const NO_SELECTED_ID: u32 = 213767u;
+const GEOGRAPHICAL_DRAW: u32 = 0u;
+const POLITICAL_DRAW: u32 = 1u;
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4f {
@@ -37,17 +37,15 @@ fn fragment(in: VertexOutput) -> @location(0) vec4f {
 
 	let province_id = id[acc];
 
-	if selected_id == province_id && selected_id != NO_ID_SELECTED{
+	if selected_id == province_id && selected_id != NO_SELECTED_ID{
 		return  vec4f(1.0, 1.0, 1.0, 1.0);
 	}
 	
     switch draw_mode{
-        case Political:{
-            return  vec4f(1.0, 0.0, 1.0, 1.0);
+        case POLITICAL_DRAW:{
             return political(id[acc]);
         }
-        case Geographical: {
-            return  vec4f(0.0, 1.0, 1.0, 1.0);
+        case GEOGRAPHICAL_DRAW: {
             return geographical(id[acc]);
         }
         default {
@@ -72,5 +70,5 @@ const terrain_colors = array<vec4f, 4>(
 );
 
 fn geographical(province_id: u32) -> vec4f{
-    return terrain_colors[provinces[province_id].terrain_type];
+    return terrain_colors[provinces[province_id].terrain_type - 1];
 }

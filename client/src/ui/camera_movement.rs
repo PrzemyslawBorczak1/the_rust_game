@@ -53,7 +53,6 @@ fn controls(
         let max_scale_x = map.width() as f32 / usable_w_px;
         let max_scale_y = map.height() as f32 / usable_h_px;
         let max_scale = max_scale_x.max(max_scale_y);
-        println!("scale {}", projection2d.scale.min(max_scale));
         projection2d.scale = projection2d.scale.min(max_scale);
 
         let fspeed = 600.0 * delta * projection2d.scale;
