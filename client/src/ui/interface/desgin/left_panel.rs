@@ -1,5 +1,5 @@
 use super::super::common::*;
-use bevy::prelude::*;
+use bevy::{ecs::bundle, prelude::*};
 
 #[derive(Component)]
 pub struct InterfaceLeftPanel;
@@ -85,30 +85,31 @@ pub fn country_data() -> impl Bundle {
             row_gap: px(8),
             ..default()
         },
-        children![country_flag_slot(), country_meta_text()],
+        children![country_flag_slot(), country_meta_text(), atack_button()],
     )
 }
 
 fn country_flag_slot() -> impl Bundle {
     (
         CountryFlagSlot,
-        Visibility::Hidden,
         Node {
             width: px(96),
             height: px(64),
             border: UiRect::all(px(1)),
             margin: UiRect::bottom(px(10)),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
             ..default()
         },
         BackgroundColor(Color::srgba(1.0, 1.0, 1.0, 0.04)),
         BorderColor::all(PANEL_BORDER),
         children![(
-            Text::new("Flag"),
-            TextFont {
-                font_size: 14.0,
+            ImageNode::default(),
+            Node {
+                width: percent(100.0),
+                height: percent(100.0),
                 ..default()
             },
-            InterfaceText { base_size: 14.0 },
         )],
     )
 }
@@ -156,3 +157,5 @@ fn action_button<M: Component>(label: &str, marker: M) -> impl Bundle {
         )],
     )
 }
+
+fn atack_button() -> impl Bundle {}

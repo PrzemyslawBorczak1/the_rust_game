@@ -6,7 +6,7 @@
       0.2,
       1.0
     ],
-    "flag_path": "flags/empire.png",
+    "flag_path": "flags/indie.png",
     "army": 0,
     "gold": 0
   },
@@ -17,7 +17,7 @@
       0.3,
       1.0
     ],
-    "flag_path": "flags/republic.png",
+    "flag_path": "flags/niemcy.png",
     "army": 0,
     "gold": 0
   },
@@ -28,7 +28,7 @@
       0.82,
       1.0
     ],
-    "flag_path": "flags/kingdom.png",
+    "flag_path": "flags/polska.png",
     "army": 0,
     "gold": 0
   },
@@ -39,7 +39,7 @@
       0.18,
       1.0
     ],
-    "flag_path": "flags/duchy.png",
+    "flag_path": "flags/ue.png",
     "army": 0,
     "gold": 0
   }

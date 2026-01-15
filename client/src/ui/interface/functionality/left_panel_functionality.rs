@@ -1,3 +1,5 @@
+use std::default;
+
 use super::super::common::InterfaceState;
 use super::super::desgin::left_panel::*;
 use crate::ui::NO_SELECTED_ID;
@@ -34,7 +36,7 @@ impl Plugin for LeftPanelFunctionalityPlugin {
             )
             .add_systems(
                 OnEnter(LeftPanelView::Country),
-                (set_country_view, set_text).chain(),
+                (set_country_view, set_text, set_flag).chain(),
             )
             .add_systems(
                 OnEnter(LeftPanelView::Province),
@@ -116,10 +118,38 @@ fn on_refresh(
     world: Res<GameWorld>,
     mut reader: MessageReader<Refresch>,
     active_province: Res<ActiveProvince>,
+
+    mut q_flag: Query<(&mut ImageNode, Option<&CountryMetaText>)>,
+    asset_server: Res<AssetServer>,
 ) {
     if reader.read().next().is_none() {
         return;
     }
 
+    // the same function as below :(
+    for (mut img, _) in &mut q_flag {
+        match world.get_country(active_province.0) {
+            Some(c) => img.image = asset_server.load(&c.flag_path),
+            None => img.image = Handle::<Image>::default(),
+        }
+    }
+
     set_text(q, world, active_province);
+}
+
+fn set_flag(
+    mut q: Query<(&mut ImageNode, Option<&CountryMetaText>)>,
+    world: Res<GameWorld>,
+    asset_server: Res<AssetServer>,
+    active_province: Res<ActiveProvince>,
+) {
+    for (mut img, _) in &mut q {
+        let path = match world.get_country(active_province.0) {
+            Some(c) => &c.flag_path,
+            None => return,
+        };
+        let new = asset_server.load(path);
+        println!("Handle {:?}", new);
+        img.image = new;
+    }
 }

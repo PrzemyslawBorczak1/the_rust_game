@@ -1,5 +1,5 @@
 use super::{
-    camera_movement::CameraMovementPlugin, mouse_click::MouseClickPlugin, startup::StartupPlugin,
+    camera_movement::CameraMovementPlugin,  startup::StartupPlugin,
 };
 
 use super::interface::InterfaceGroup;
@@ -12,7 +12,6 @@ impl PluginGroup for UIGroup {
         PluginGroupBuilder::start::<Self>()
             .add_group(InterfaceGroup)
             .add(CameraMovementPlugin)
-            .add(MouseClickPlugin)
             .add(StartupPlugin)
     }
 }

@@ -22,6 +22,11 @@ struct Country{
 @group(#{MATERIAL_BIND_GROUP}) @binding(7) var<uniform> draw_mode: u32;
 
 
+const TERRAIN_FLAT: u32 = 0u;
+const TERRAIN_WATER: u32 = 1u;
+const TERRAIN_MOUNTAIN: u32 = 2u;
+ const TERRAIN_FOREST: u32 = 3u;
+
 
 
 const NO_SELECTED_ID: u32 = 213767u;
@@ -56,6 +61,10 @@ fn fragment(in: VertexOutput) -> @location(0) vec4f {
 
 
 fn political(province_id: u32) -> vec4f{
+    if provinces[province_id].terrain_type == TERRAIN_WATER{
+        return vec4f(0.005f, 0.005f, 0.005f, 1f);
+    }
+
 	let country = provinces[province_id].owner_id;
 	let color = countries[country].color;
     return color;
