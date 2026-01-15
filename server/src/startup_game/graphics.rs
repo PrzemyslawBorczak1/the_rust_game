@@ -1,5 +1,5 @@
 use crate::data::GameState;
-use crate::load_game::finish::LoadingState;
+use crate::startup_game::finish::LoadingState;
 use bevy::prelude::*;
 
 #[derive(States, Debug, Hash, Eq, PartialEq, Clone, Default)]
@@ -17,7 +17,7 @@ pub struct LoadingGraphicsPlugin;
 impl Plugin for LoadingGraphicsPlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<LoadingGraphics>()
-            .add_systems(OnEnter(GameState::LoadGame), loading_screen_setup)
+            .add_systems(OnEnter(LoadingGraphics::Show), loading_screen_setup)
             .add_systems(Update, check.run_if(in_state(LoadingGraphics::Show)));
     }
 }

@@ -1,4 +1,4 @@
 pub mod game;
-pub mod load_game;
+pub mod startup_game;
 pub mod menu;
 pub mod data;

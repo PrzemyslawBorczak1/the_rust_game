@@ -1,20 +1,21 @@
-use crate::load_game::finish::FinishLoadingPlugin;
-use crate::load_game::graphics::LoadingGraphicsPlugin;
+use crate::startup_game::graphics::LoadingGraphicsPlugin;
+use crate::startup_game::{finish::FinishLoadingPlugin, new_game::NewGamePlugin};
 
 use super::load_resource::*;
 use bevy::{app::PluginGroupBuilder, prelude::*};
 use to_delete::*;
-pub struct LoadGamePlugin;
+pub struct StartUpGamePlugin;
 
-impl PluginGroup for LoadGamePlugin {
+impl PluginGroup for StartUpGamePlugin {
     fn build(self) -> PluginGroupBuilder {
         PluginGroupBuilder::start::<Self>()
-            .add(SkipToLoad)
+            // .add(SkipToLoad)
             .add(LoadingGraphicsPlugin)
             .add(LoadVecProvincePlugin)
             .add(LoadVecCountryPlugin)
             .add(LoadIdMapPlugin)
             .add(FinishLoadingPlugin)
+            .add(NewGamePlugin)
     }
 }
 
@@ -24,8 +25,8 @@ mod to_delete {
 
     use crate::{
         data::{FetchGamePath, GameState, SaveGamePath},
-        load_game::graphics::LoadingGraphics,
         menu::MenuState,
+        startup_game::graphics::LoadingGraphics,
     };
 
     pub struct SkipToLoad;
@@ -55,14 +56,12 @@ mod to_delete {
     fn set_data(mut fetch: ResMut<FetchGamePath>, mut save: ResMut<SaveGamePath>) {
         *fetch = FetchGamePath {
             id_texture: "map_nr.png".to_string(),
-            province_texture: "textures.json".to_string(),
             vec_provinces: "provinces.json".to_string(),
             vec_country: "countries.json".to_string(),
         };
 
         *save = SaveGamePath {
             id_texture: "id_save1.png".to_string(),
-            province_texture: "texture_save1.png".to_string(),
             vec_provinces: "provinces.json".to_string(),
             vec_country: "countries.json".to_string(),
         }

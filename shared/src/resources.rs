@@ -1,23 +1,29 @@
-use bevy::{prelude::*, render::render_resource::ShaderType};
+use bevy::prelude::*;
 use serde;
 use serde::*;
 
-pub mod terrain_type {
-    pub const Flat: u32 = 1;
-    pub const Forest: u32 = 2;
-    pub const Mountain: u32 = 3;
-    pub const Water: u32 = 4;
-}
+pub const TERRAIN_FLAT: u32 = 0;
+pub const TERRAIN_WATER: u32 = 1;
+pub const TERRAIN_MOUNTAIN: u32 = 2;
+pub const TERRAIN_FOREST: u32 = 3;
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize, ShaderType)]
+pub const NO_OWNER: u32 = 213767;
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Province {
     pub owner_id: u32,
     pub terrain_type: u32,
+    pub gold_per_second: u32,
+    pub level: u32,
+    pub army: u32,
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize, ShaderType)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Country {
     pub color: Vec4,
+    pub flag_path: String,
+    pub army: u32,
+    pub gold: u32,
 }
 
 #[derive(Debug, Clone, Asset, TypePath, Default, Serialize, Deserialize)]

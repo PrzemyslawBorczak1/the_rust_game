@@ -4,6 +4,7 @@ use bevy::prelude::*;
 pub enum GameState {
     #[default]
     Menu,
+    NewGame,
     LoadGame,
     Game,
 }
@@ -11,7 +12,6 @@ pub enum GameState {
 #[derive(Debug, Default, Resource)]
 pub struct FetchGamePath {
     pub id_texture: String,
-    pub province_texture: String,
     pub vec_provinces: String,
     pub vec_country: String,
 }
@@ -19,7 +19,6 @@ pub struct FetchGamePath {
 #[derive(Debug, Default, Resource)]
 pub struct SaveGamePath {
     pub id_texture: String,
-    pub province_texture: String,
     pub vec_provinces: String,
     pub vec_country: String,
 }

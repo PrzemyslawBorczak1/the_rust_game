@@ -1,3 +1,5 @@
+use crate::ui::{CountryGpu, ProvinceGpu};
+
 use super::super::ui::{GPUMaterial, GPUMaterialHandle};
 use super::command_client::*;
 use bevy::prelude::*;
@@ -15,14 +17,30 @@ impl Execute for Init {
         meshes: &mut Assets<Mesh>,
     ) {
         *world = self.world;
+        info!["{:?}", world.id.map.len()];
 
         if let Some(gpu) = gpu_materials {
             gpu.width = world.id.width;
             gpu.height = world.id.height;
 
             gpu.id = buffers.add(ShaderStorageBuffer::from(world.id.map.clone()));
-            gpu.provinces = buffers.add(ShaderStorageBuffer::from(world.provinces.clone()));
-            gpu.countries = buffers.add(ShaderStorageBuffer::from(world.countries.clone()));
+            gpu.provinces = buffers.add(ShaderStorageBuffer::from(
+                world
+                    .provinces
+                    .iter()
+                    .map(|p| ProvinceGpu {
+                        owner_id: p.owner_id,
+                        terrain_type: p.terrain_type,
+                    })
+                    .collect::<Vec<ProvinceGpu>>(),
+            ));
+            gpu.countries = buffers.add(ShaderStorageBuffer::from(
+                world
+                    .countries
+                    .iter()
+                    .map(|c| CountryGpu { color: c.color })
+                    .collect::<Vec<CountryGpu>>(),
+            ));
         }
         let rect_handle = meshes.add(Rectangle::from_size(Vec2::new(
             world.width() as f32,
@@ -38,7 +56,6 @@ impl Execute for Init {
             }
         });
         info!["vals: {v:?}"];
-        info!["vals: {:#?}", world.provinces];
         info!["vals: {:#?}", world.countries];
     }
 }

@@ -48,7 +48,7 @@ fn consolidate_province(
     mut state: ResMut<NextState<ProvinceLoadingState>>,
 ) {
     if let Some(x) = assets.get(handle.0.id()) {
-        println!("{x:#?}");
+        println!("vec provlen: {}", x.0.len());
         state.set(ProvinceLoadingState::Loaded);
     }
 }

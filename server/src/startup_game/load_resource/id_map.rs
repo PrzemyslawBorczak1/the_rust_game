@@ -48,9 +48,9 @@ fn consolidate(
     mut state: ResMut<NextState<IdMapLoadingState>>,
 ) {
     if let Some(x) = assets.get(handle.0.id()) {
-        println!("{:#?}", x.adjacency);
-        println!("{:#?}", x.height);
-        println!("{:#?}", x.width);
+        println!("\n\nMap: {:#?}", x.adjacency);
+        println!("\n\nMap: {:#?}", x.height);
+        println!("\n\nMap: {:#?}", x.width);
         state.set(IdMapLoadingState::Loaded);
     }
 }

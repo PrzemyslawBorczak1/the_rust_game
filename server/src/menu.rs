@@ -138,36 +138,40 @@ mod seters {
 
     pub fn load(
         mut game_state: ResMut<NextState<GameState>>,
-        fetch: ResMut<FetchGamePath>,
-        save: ResMut<SaveGamePath>,
+        mut fetch: ResMut<FetchGamePath>,
+        mut save: ResMut<SaveGamePath>,
     ) {
-        set_data(fetch, save);
-        game_state.set(GameState::LoadGame);
-    }
-
-    pub fn new_game(
-        mut game_state: ResMut<NextState<GameState>>,
-        fetch: ResMut<FetchGamePath>,
-        save: ResMut<SaveGamePath>,
-    ) {
-        set_data(fetch, save);
-        game_state.set(GameState::LoadGame);
-    }
-
-    // todo delete
-    fn set_data(mut fetch: ResMut<FetchGamePath>, mut save: ResMut<SaveGamePath>) {
         *fetch = FetchGamePath {
-            id_texture: "map_nr.png".to_string(),
-            province_texture: "map_nr.png".to_string(),
+            id_texture: "map1.png".to_string(),
             vec_provinces: "provinces.json".to_string(),
             vec_country: "countries.json".to_string(),
         };
 
         *save = SaveGamePath {
-            id_texture: "map_nr.png".to_string(),
-            province_texture: "map_nr.png".to_string(),
-            vec_provinces: "json".to_string(),
-            vec_country: "json".to_string(),
-        }
+            id_texture: "map1.png".to_string(),
+            vec_provinces: "provinces.json".to_string(),
+            vec_country: "countries.json".to_string(),
+        };
+
+        game_state.set(GameState::LoadGame);
+    }
+
+    pub fn new_game(
+        mut game_state: ResMut<NextState<GameState>>,
+        mut fetch: ResMut<FetchGamePath>,
+        mut save: ResMut<SaveGamePath>,
+    ) {
+        *fetch = FetchGamePath {
+            id_texture: "maps\\map_ng.png".to_string(),
+            vec_provinces: "jsons\\provinces.json".to_string(),
+            vec_country: "jsons\\countries.json".to_string(),
+        };
+
+        *save = SaveGamePath {
+            id_texture: "map1.png".to_string(),
+            vec_provinces: "provinces.json".to_string(),
+            vec_country: "countries.json".to_string(),
+        };
+        game_state.set(GameState::NewGame);
     }
 }

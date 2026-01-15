@@ -63,12 +63,12 @@ fn political(province_id: u32) -> vec4f{
 
 
 const terrain_colors = array<vec4f, 4>(
-    vec4f(0.2, 0.8, 0.2, 1.0),   
-    vec4f(0.4, 0.6, 0.2, 1.0),   
-    vec4f(0.6, 0.6, 0.6, 1.0),   
-    vec4f(0.2, 0.4, 0.8, 1.0),  
+    vec4f(0.2, 0.8, 0.2, 1.0),  // 0: FLAT
+    vec4f(0.2, 0.4, 0.8, 1.0),  // 1: WATER
+    vec4f(0.6, 0.6, 0.6, 1.0),  // 2: MOUNTAIN
+    vec4f(0.4, 0.6, 0.2, 1.0),  // 3: FOREST 
 );
 
 fn geographical(province_id: u32) -> vec4f{
-    return terrain_colors[provinces[province_id].terrain_type - 1];
+    return terrain_colors[provinces[province_id].terrain_type];
 }
