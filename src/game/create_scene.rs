@@ -61,5 +61,18 @@ fn create_scene(
         world.height() as f32,
     )));
 
+
+
+
+
+
+
+
+
+
+
+
+
+    
     commands.spawn((Mesh2d(rect_handle), MeshMaterial2d(gpu_handle.0.clone())));
 }
