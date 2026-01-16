@@ -5,7 +5,7 @@ use shared::resources::GameWorld;
 
 use crate::{
     data::{GameState, SaveGamePath},
-    game::systems::GlobalTimer,
+    game::{ai::AiState, systems::GlobalTimer},
 };
 
 pub struct GameGraphicsPlugin;
@@ -119,11 +119,14 @@ fn button_system(
 
 fn on_start_button_click(
     q: Query<&Interaction, (Changed<Interaction>, With<Button>, With<StartButton>)>,
+    mut timer: ResMut<GlobalTimer>,
+    mut ai_state: ResMut<NextState<AiState>>,
 ) {
     for interaction in &q {
         if *interaction == Interaction::Pressed {
             info!("Start pressed");
-            // put your start action here
+            ai_state.set(AiState::Runing);
+            timer.1 = true;
         }
     }
 }

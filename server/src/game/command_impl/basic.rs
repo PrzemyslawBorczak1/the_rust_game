@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
 
-use bevy::prelude::*;
+use bevy::{ecs::world, prelude::*};
 
 use shared::{
     commands_client::{CommandClient, basic::*},
@@ -21,11 +21,19 @@ pub trait ExecuteChooseCountry {
     ) -> Option<Vec<OutCmd>>;
 }
 
-fn choose_country(active: &mut ActiveClients, addr: SocketAddr, id: u32) -> Option<Vec<OutCmd>> {
+fn choose_country(
+    active: &mut ActiveClients,
+    addr: SocketAddr,
+    id: u32,
+    world: &mut GameWorld,
+) -> Option<Vec<OutCmd>> {
     if id == NO_OWNER {
         return log_only(addr, "Selected province doesnt have owner".to_string());
     }
     if active.0.values().any(|v| v == &Some(id)) {
+        return log_only(addr, "Country already taken".to_string());
+    }
+    if world.countries[id as usize].is_taken {
         return log_only(addr, "Country already taken".to_string());
     }
 
@@ -36,11 +44,11 @@ fn choose_country(active: &mut ActiveClients, addr: SocketAddr, id: u32) -> Opti
 impl ExecuteChooseCountry for ChooseCountry {
     fn execute(
         &self,
-        _world: &mut GameWorld,
+        world: &mut GameWorld,
         active: &mut ActiveClients,
         addr: SocketAddr,
     ) -> Option<Vec<OutCmd>> {
-        choose_country(active, addr, self.0)
+        choose_country(active, addr, self.0, world)
     }
 }
 

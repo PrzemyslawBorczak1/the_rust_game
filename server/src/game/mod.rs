@@ -8,3 +8,5 @@ mod command_impl;
 mod systems;
 
 mod graphics;
+
+mod ai;
