@@ -1,5 +1,5 @@
 use super::super::common::*;
-use bevy::{ecs::bundle, prelude::*};
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct InterfaceLeftPanel;
@@ -22,6 +22,18 @@ pub struct CountryMetaText;
 #[derive(Component)]
 pub struct ProvinceMetaText;
 
+#[derive(Component)]
+pub struct AttackButton;
+
+#[derive(Component)]
+pub struct ShowProfileButton;
+
+#[derive(Component)]
+pub struct ProfileMetaText;
+
+#[derive(Component)]
+pub struct ChooseCountryButton;
+
 pub fn left_panel() -> impl Bundle {
     (
         InterfaceLeftPanel,
@@ -38,6 +50,7 @@ pub fn left_panel() -> impl Bundle {
         children![left_panel_header(), left_panel_body()],
     )
 }
+
 fn left_panel_header() -> impl Bundle {
     (
         Node {
@@ -56,6 +69,7 @@ fn left_panel_header() -> impl Bundle {
             children![
                 action_button("Province", ShowProvinceButton),
                 action_button("Country", ShowCountryButton),
+                action_button("Profile", ShowProfileButton)
             ]
         ),],
     )
@@ -77,7 +91,7 @@ fn left_panel_body() -> impl Bundle {
     )
 }
 
-pub fn country_data() -> impl Bundle {
+pub fn country_panel() -> impl Bundle {
     (
         Node {
             width: percent(100),
@@ -85,7 +99,11 @@ pub fn country_data() -> impl Bundle {
             row_gap: px(8),
             ..default()
         },
-        children![country_flag_slot(), country_meta_text(), atack_button()],
+        children![
+            country_flag_slot(),
+            country_meta_text(),
+            action_button("Choose Country", ChooseCountryButton)
+        ],
     )
 }
 
@@ -126,7 +144,19 @@ fn country_meta_text() -> impl Bundle {
     )
 }
 
-pub fn province_meta_text() -> impl Bundle {
+pub fn province_panel() -> impl Bundle {
+    (
+        Node {
+            width: percent(100),
+            flex_direction: FlexDirection::Column,
+            row_gap: px(8),
+            ..default()
+        },
+        children![province_meta_text(), action_button("Attack", AttackButton),],
+    )
+}
+
+fn province_meta_text() -> impl Bundle {
     (
         Text::new("Province"),
         TextFont {
@@ -135,6 +165,18 @@ pub fn province_meta_text() -> impl Bundle {
         },
         InterfaceText { base_size: 16.0 },
         ProvinceMetaText,
+    )
+}
+
+pub fn profile_meta_text() -> impl Bundle {
+    (
+        Text::new("Profile"),
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
+        InterfaceText { base_size: 16.0 },
+        ProfileMetaText,
     )
 }
 
@@ -157,5 +199,3 @@ fn action_button<M: Component>(label: &str, marker: M) -> impl Bundle {
         )],
     )
 }
-
-fn atack_button() -> impl Bundle {}

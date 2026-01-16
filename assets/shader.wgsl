@@ -22,6 +22,9 @@ struct Country{
 @group(#{MATERIAL_BIND_GROUP}) @binding(7) var<uniform> draw_mode: u32;
 
 
+@group(#{MATERIAL_BIND_GROUP}) @binding(8) var<uniform> time: f32;
+
+
 const TERRAIN_FLAT: u32 = 0u;
 const TERRAIN_WATER: u32 = 1u;
 const TERRAIN_MOUNTAIN: u32 = 2u;
@@ -32,6 +35,11 @@ const TERRAIN_MOUNTAIN: u32 = 2u;
 const NO_SELECTED_ID: u32 = 213767u;
 const GEOGRAPHICAL_DRAW: u32 = 0u;
 const POLITICAL_DRAW: u32 = 1u;
+const ATTACK_DRAW: u32 = 2u;
+
+
+
+const NO_OWNER: u32 = 213767;
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4f {
@@ -52,6 +60,9 @@ fn fragment(in: VertexOutput) -> @location(0) vec4f {
         }
         case GEOGRAPHICAL_DRAW: {
             return geographical(id[acc]);
+        }
+        case ATTACK_DRAW: {
+            return attack_draw(id[acc]);
         }
         default {
             return vec4f(1.0, 1.0, 1.0, 1.0);
@@ -81,3 +92,32 @@ const terrain_colors = array<vec4f, 4>(
 fn geographical(province_id: u32) -> vec4f{
     return terrain_colors[provinces[province_id].terrain_type];
 }
+
+const attack_color : vec4f = vec4f(0.15, 0.78, 0.72, 0.45);
+fn attack_draw(province_id: u32) -> vec4f{
+    if provinces[province_id].terrain_type == TERRAIN_WATER{
+        return vec4f(0.005f, 0.005f, 0.005f, 1f);
+    }
+
+    if provinces[selected_id].owner_id == provinces[province_id].owner_id{
+        return vec4f(0.01f, 0.01f, 0.01f, 1f);
+    }
+
+    let country = provinces[province_id].owner_id;
+    if country != NO_OWNER{
+        let color = countries[country].color;
+        return mix(color, attack_color, 0.7);
+    }
+
+    
+    if provinces[selected_id].owner_id == NO_OWNER {
+        return vec4f(0.01f, 0.01f, 0.01f, 1f);
+    }
+    else{
+        return attack_color * (0.40 + 0.60 * (0.5 + 0.5 * sin(time * 2.5)));
+    }
+
+
+}
+
+

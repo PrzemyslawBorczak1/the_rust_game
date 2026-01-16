@@ -8,7 +8,9 @@
     ],
     "flag_path": "flags/indie.png",
     "army": 0,
-    "gold": 0
+    "gold": 0,
+    "is_taken": false,
+    "war": []
   },
   {
     "color": [
@@ -19,7 +21,9 @@
     ],
     "flag_path": "flags/niemcy.png",
     "army": 0,
-    "gold": 0
+    "gold": 0,
+    "is_taken": false,
+    "war": []
   },
   {
     "color": [
@@ -30,7 +34,9 @@
     ],
     "flag_path": "flags/polska.png",
     "army": 0,
-    "gold": 0
+    "gold": 0,
+    "is_taken": false,
+    "war": []
   },
   {
     "color": [
@@ -41,6 +47,8 @@
     ],
     "flag_path": "flags/ue.png",
     "army": 0,
-    "gold": 0
+    "gold": 0,
+    "is_taken": false,
+    "war": []
   }
 ]

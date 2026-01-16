@@ -1,4 +1,5 @@
 use super::super::ui::{GPUMaterial, GPUMaterialHandle};
+use crate::ui::interface::MessageLog;
 use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy::render::storage::ShaderStorageBuffer;
@@ -18,6 +19,7 @@ pub fn apply(
     mut handle: ResMut<GPUMaterialHandle>,
     mut buffers: ResMut<Assets<ShaderStorageBuffer>>,
     mut meshes: ResMut<Assets<Mesh>>,
+    q_root: Query<&mut Text, With<MessageLog>>,
 ) {
     let bevy_in = match inbox.0.lock() {
         Ok(g) => g,
@@ -27,39 +29,41 @@ pub fn apply(
             return;
         }
     };
-
-    loop {
-        match bevy_in.try_recv() {
-            Ok(ClientEvent::Line(line)) => match CommandClient::deserialize(&line) {
-                Ok(cmd) => {
-                    cmd.execute(
-                        &mut world,
-                        &mut commands,
-                        gpu_materials.get_mut(&handle.0),
-                        &mut handle,
-                        &mut *buffers,
-                        &mut meshes,
-                    );
+    for mut text in q_root {
+        loop {
+            match bevy_in.try_recv() {
+                Ok(ClientEvent::Line(line)) => match CommandClient::deserialize(&line) {
+                    Ok(cmd) => {
+                        cmd.execute(
+                            &mut world,
+                            &mut commands,
+                            gpu_materials.get_mut(&handle.0),
+                            &mut handle,
+                            &mut *buffers,
+                            &mut text,
+                            &mut meshes,
+                        );
+                    }
+                    Err(e) => {
+                        warn!("Failed to parse JSON: {e}. Line: {line}");
+                    }
+                },
+                Ok(ClientEvent::Error(msg)) => {
+                    error!("Server-side/client read error: {msg}");
+                    commands.write_message(AppExit::error());
+                    return;
                 }
-                Err(e) => {
-                    warn!("Failed to parse JSON: {e}. Line: {line}");
+                Ok(ClientEvent::Disconnected) => {
+                    error!("Server disconnected.");
+                    commands.write_message(AppExit::error());
+                    return;
                 }
-            },
-            Ok(ClientEvent::Error(msg)) => {
-                error!("Server-side/client read error: {msg}");
-                commands.write_message(AppExit::error());
-                return;
-            }
-            Ok(ClientEvent::Disconnected) => {
-                error!("Server disconnected.");
-                commands.write_message(AppExit::error());
-                return;
-            }
-            Err(TryRecvError::Empty) => break,
-            Err(TryRecvError::Disconnected) => {
-                error!("Client inbox channel disconnected.");
-                commands.write_message(AppExit::error());
-                return;
+                Err(TryRecvError::Empty) => break,
+                Err(TryRecvError::Disconnected) => {
+                    error!("Client inbox channel disconnected.");
+                    commands.write_message(AppExit::error());
+                    return;
+                }
             }
         }
     }

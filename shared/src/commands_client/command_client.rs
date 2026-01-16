@@ -4,9 +4,9 @@ use super::basic::*;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum CommandClient {
-    ChangeProvince(Vec<ChangeProvince>),
-    ChangeCountry(Vec<ChangeCountry>),
     Init(Init),
+    Log(Log),
+    UpdateProvince(UpdateProvince),
 }
 
 impl CommandClient {

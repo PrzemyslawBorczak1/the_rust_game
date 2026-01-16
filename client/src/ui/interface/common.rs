@@ -21,3 +21,14 @@ pub struct InterfaceRoot;
 pub struct InterfaceText {
     pub base_size: f32,
 }
+
+
+#[derive(States, Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub enum AttackState {
+    #[default]
+    NoAtack,
+    Choose,
+}
+
+#[derive(Resource)]
+pub struct ActiveProvince(pub u32);

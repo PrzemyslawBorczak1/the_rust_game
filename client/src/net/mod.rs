@@ -1,6 +1,6 @@
 mod apply;
 mod plugin;
 mod threads;
-mod types;
+pub mod types;
 
 pub use plugin::*;

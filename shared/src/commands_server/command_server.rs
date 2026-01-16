@@ -5,8 +5,10 @@ use super::basic::*;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum CommandServer {
-    UpgradeProvince(UpgradeProvince),
-    BuyArmy(BuyArmy),
+    // UpgradeProvince(UpgradeProvince),
+    // BuyArmy(BuyArmy),
+    Attack(Attack),
+    ChooseCountry(ChooseCountry),
 }
 
 impl CommandServer {

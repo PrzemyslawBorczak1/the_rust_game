@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use shared::{commands_client::CommandClient, commands_server::CommandServer};
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     net::{SocketAddr, TcpStream},
     sync::{
         Mutex,
@@ -41,6 +41,8 @@ pub enum OutCmd {
     Send { targets: Target, msg: String },
 }
 
+
+
 #[derive(Debug)]
 pub enum Target {
     All,
@@ -53,6 +55,4 @@ pub struct NetOutbox(pub Sender<OutCmd>);
 
 // for writer
 #[derive(Resource, Default)]
-pub struct ActiveClients {
-    pub set: HashSet<SocketAddr>,
-}
+pub struct ActiveClients(pub HashMap<SocketAddr, Option<u32>>);

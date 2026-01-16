@@ -1,7 +1,9 @@
 use super::super::command_impl::command::Execute;
 use bevy::prelude::*;
 use shared::{
-    commands_client::{CommandClient, basic::Init}, commands_server::CommandServer, resources::GameWorld,
+    commands_client::{CommandClient, basic::Init},
+    commands_server::CommandServer,
+    resources::GameWorld,
 };
 use std::sync::mpsc::TryRecvError;
 
@@ -54,7 +56,7 @@ fn handle_event(
             true
         }
         InEvent::Command { addr, command } => {
-            handle_command(addr, command, outbox, world);
+            handle_command(addr, active, command, outbox, world);
             true
         }
         InEvent::Error { addr, msg } => {
@@ -71,10 +73,10 @@ fn handle_connected(
     world: &mut ResMut<GameWorld>,
 ) -> bool {
     info!("client connected: {addr}");
-    active.set.insert(addr);
+    active.0.insert(addr, None);
 
-    let cmd = CommandClient::Init(Init{
-        world: (**world).clone()
+    let cmd = CommandClient::Init(Init {
+        world: (**world).clone(),
     });
 
     let world_serialized = match cmd.serialize() {
@@ -101,7 +103,7 @@ fn handle_disconnected(
     active: &mut ResMut<ActiveClients>,
 ) {
     info!("client disconnected: {addr}");
-    active.set.remove(&addr);
+    active.0.remove(&addr);
 
     if let Err(e) = outbox.0.send(OutCmd::RemoveClient { addr }) {
         error!("[{addr}] failed to enqueue RemoveClient: {e}");
@@ -110,13 +112,14 @@ fn handle_disconnected(
 
 fn handle_command(
     addr: std::net::SocketAddr,
+    active: &mut ResMut<ActiveClients>,
     command: CommandServer,
     outbox: &Res<NetOutbox>,
     world: &mut GameWorld,
 ) {
     info!("from {addr}: {command:#?}");
 
-    let commands = match command.execute(world) {
+    let commands = match command.execute(world, active, addr) {
         Some(ch) => ch,
         None => return,
     };

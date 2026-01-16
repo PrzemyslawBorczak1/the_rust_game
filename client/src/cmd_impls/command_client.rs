@@ -1,3 +1,5 @@
+use crate::cmd_impls::basic::{ExecuteInit, ExecuteLog, ExecuteUpdateProvince};
+
 use super::super::ui::{GPUMaterial, GPUMaterialHandle};
 use bevy::{prelude::*, render::storage::ShaderStorageBuffer};
 use shared::{commands_client::CommandClient, resources::GameWorld};
@@ -10,6 +12,8 @@ pub trait Execute {
         gpu_materials: Option<&mut GPUMaterial>,
         handle: &mut GPUMaterialHandle,
         buffers: &mut Assets<ShaderStorageBuffer>,
+
+        logger: &mut Text,
         meshes: &mut Assets<Mesh>,
     );
 }
@@ -23,19 +27,20 @@ impl Execute for CommandClient {
         handle: &mut GPUMaterialHandle,
         buffers: &mut Assets<ShaderStorageBuffer>,
 
+        logger: &mut Text,
         meshes: &mut Assets<Mesh>,
     ) {
         match self {
             // CommandClient::ChangeCountry(cmd) => {
             //     cmd.execute(world, commands, gpu_materials, handle, buffers, meshes)
             // }
-            // CommandClient::ChangeProvince(cmd) => {
-            //     cmd.execute(world, commands, gpu_materials, handle, buffers, meshes)
-            // }
+            CommandClient::UpdateProvince(cmd) => {
+                cmd.execute(world, gpu_materials, buffers)
+            }
             CommandClient::Init(cmd) => {
                 cmd.execute(world, commands, gpu_materials, handle, buffers, meshes)
             }
-            _ => {}
+            CommandClient::Log(log) => log.execute(logger),
         }
     }
 }

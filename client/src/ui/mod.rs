@@ -1,7 +1,7 @@
 mod camera_movement;
 mod gpu;
 mod impls;
-mod interface;
+pub mod interface;
 mod startup;
 
 mod group;

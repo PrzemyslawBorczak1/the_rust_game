@@ -1,3 +1,4 @@
+use bevy::platform::collections::HashSet;
 use bevy::prelude::*;
 use serde;
 use serde::*;
@@ -24,6 +25,9 @@ pub struct Country {
     pub flag_path: String,
     pub army: u32,
     pub gold: u32,
+
+    pub is_taken: bool,
+    pub war: HashSet<u32>,
 }
 
 #[derive(Debug, Clone, Asset, TypePath, Default, Serialize, Deserialize)]

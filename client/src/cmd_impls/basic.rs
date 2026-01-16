@@ -3,10 +3,23 @@ use crate::ui::{CountryGpu, ProvinceGpu};
 use super::super::ui::{GPUMaterial, GPUMaterialHandle};
 use super::command_client::*;
 use bevy::prelude::*;
+use bevy::render::render_resource::encase::StorageBuffer;
 use bevy::render::storage::ShaderStorageBuffer;
 use shared::{commands_client::basic::*, resources::GameWorld};
 
-impl Execute for Init {
+pub trait ExecuteInit {
+    fn execute(
+        self,
+        world: &mut GameWorld,
+        commands: &mut Commands,
+        gpu_materials: Option<&mut GPUMaterial>,
+        handle: &mut GPUMaterialHandle,
+        buffers: &mut Assets<ShaderStorageBuffer>,
+        meshes: &mut Assets<Mesh>,
+    );
+}
+
+impl ExecuteInit for Init {
     fn execute(
         self,
         world: &mut GameWorld,
@@ -57,6 +70,47 @@ impl Execute for Init {
         });
         info!["vals: {v:?}"];
         info!["vals: {:#?}", world.countries];
+    }
+}
+
+pub trait ExecuteLog {
+    fn execute(self, logger: &mut Text);
+}
+
+impl ExecuteLog for Log {
+    fn execute(self, logger: &mut Text) {
+        logger.0 = self.0;
+    }
+}
+
+pub trait ExecuteUpdateProvince {
+    fn execute(self,
+        world: &mut GameWorld,
+        gpu_materials: Option<&mut GPUMaterial>,
+        buffers: &mut Assets<ShaderStorageBuffer>,
+);
+}
+
+impl ExecuteUpdateProvince for UpdateProvince {
+    fn execute(self,
+            world: &mut GameWorld,
+            gpu_materials: Option<&mut GPUMaterial>,
+            buffers: &mut Assets<ShaderStorageBuffer>,
+    ) {
+        world.provinces[self.id as usize] = self.province;
+
+        if let Some(material) = gpu_materials{
+            material.provinces = buffers.add(ShaderStorageBuffer::from(
+                world
+                    .provinces
+                    .iter()
+                    .map(|p| ProvinceGpu {
+                        owner_id: p.owner_id,
+                        terrain_type: p.terrain_type,
+                    })
+                    .collect::<Vec<ProvinceGpu>>(),
+            ));
+        }
     }
 }
 

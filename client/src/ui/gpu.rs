@@ -12,6 +12,7 @@ use bevy::reflect::TypePath;
 pub const NO_SELECTED_ID: u32 = 213767;
 pub const GEOGRAPHICAL_DRAW: u32 = 0;
 pub const POLITICAL_DRAW: u32 = 1;
+pub const ATACK_DRAW: u32 = 2;
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, ShaderType)]
 pub struct CountryGpu {
@@ -24,7 +25,7 @@ pub struct ProvinceGpu {
     pub terrain_type: u32,
 }
 
-#[derive(AsBindGroup, Debug, Clone, Asset, TypePath)]
+#[derive(AsBindGroup, Debug, Clone, Asset, TypePath, Default)]
 pub struct GPUMaterial {
     #[storage(1, read_only)]
     pub id: Handle<ShaderStorageBuffer>,
@@ -46,6 +47,9 @@ pub struct GPUMaterial {
 
     #[uniform(7)]
     pub draw_type: u32,
+
+    #[uniform(8)]
+    pub timer: f32,
     // #[texture(7)]
     // #[sampler(8)]
     // pub provinces_texture: Handle<Image>,
