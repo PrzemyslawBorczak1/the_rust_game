@@ -1,7 +1,14 @@
 use bevy::{ecs::world, prelude::*};
-use shared::resources::GameWorld;
+use rand::{Rng, random};
+use shared::{
+    commands_client::{CommandClient, basic::UpdateProvince},
+    resources::{GameWorld, TERRAIN_WATER},
+};
 
-use crate::game::net::types::ActiveClients;
+use crate::game::{
+    command_impl::helpers::make_send,
+    net::types::{ActiveClients, NetOutbox, OutCmd, Target},
+};
 
 #[derive(States, Debug, Hash, Eq, PartialEq, Clone, Default)]
 pub enum AiState {
@@ -49,4 +56,81 @@ fn start_ai(
     timer.1 = true;
 }
 
-pub fn make_ai_move(world: Res<GameWorld>) {}
+fn make_ai_move(
+    mut world: ResMut<GameWorld>,
+    sender: Res<NetOutbox>,
+    ai_country: Res<AiCountries>,
+    mut timer: ResMut<AiTimer>,
+    time: Res<Time>,
+) {
+    if !timer.0.tick(time.delta()).just_finished() || timer.1 == false {
+        return;
+    }
+
+    for country in &ai_country.0 {
+        make_move(&mut world, &sender, country.clone());
+    }
+}
+
+fn make_move(world: &mut GameWorld, sender: &NetOutbox, country: u32) {
+    if let Some(src) = find_owned_province_idx(world, country) {
+        let neighbours = &world.id.adjacency[src];
+        if neighbours.is_empty() {
+            return;
+        }
+
+        let dst_id: u32 = neighbours[rand::rng().random_range(0..neighbours.len())];
+        let dst = dst_id as usize;
+
+        world.provinces[src].army = 1;
+
+        if world.provinces[dst].terrain_type != TERRAIN_WATER {
+            if world.provinces[dst].army == 0 {
+                world.provinces[dst].owner_id = country;
+                world.provinces[dst].army = 1;
+            } else {
+                world.provinces[dst].army -= 1;
+            }
+        }
+
+        let msg1 = make_send(
+            Target::All,
+            CommandClient::UpdateProvince(UpdateProvince {
+                id: dst_id,
+                province: world.provinces[dst].clone(),
+            }),
+        );
+
+        let msg2 = make_send(
+            Target::All,
+            CommandClient::UpdateProvince(UpdateProvince {
+                id: src as u32,
+                province: world.provinces[src].clone(),
+            }),
+        );
+
+        if let Some(m) = msg1 {
+            let _ = sender.0.send(m);
+        }
+        if let Some(m) = msg2 {
+            let _ = sender.0.send(m);
+        }
+    }
+}
+
+fn find_owned_province_idx(world: &GameWorld, country: u32) -> Option<usize> {
+    let n = world.provinces.len();
+    if n == 0 {
+        return None;
+    }
+
+    let start = (rand::random::<u32>() as usize) % n;
+
+    for k in 0..n {
+        let i = (start + k) % n;
+        if world.provinces[i].owner_id == country {
+            return Some(i);
+        }
+    }
+    None
+}

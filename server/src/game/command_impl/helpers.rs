@@ -10,7 +10,7 @@ use shared::{
 
 use crate::game::net::types::{ActiveClients, OutCmd, Target};
 
-fn make_send(targets: Target, cmd: CommandClient) -> Option<OutCmd> {
+pub fn make_send(targets: Target, cmd: CommandClient) -> Option<OutCmd> {
     let msg = match cmd.serialize() {
         Ok(s) => s,
         Err(e) => {
