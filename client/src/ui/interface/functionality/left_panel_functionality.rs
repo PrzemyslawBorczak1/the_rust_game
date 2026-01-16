@@ -3,7 +3,6 @@ use std::default;
 use super::super::common::InterfaceState;
 use super::super::desgin::left_panel::*;
 use crate::net::types::ClientOutbox;
-use crate::ui::NO_SELECTED_ID;
 use crate::ui::interface::common::{ActiveProvince, AttackState, Refresch};
 use crate::ui::interface::desgin::right_panel::MessageLog;
 use bevy::prelude::*;

@@ -1,4 +1,3 @@
-use super::super::ui::{GPUMaterial, GPUMaterialHandle};
 use crate::ui::interface::MessageLog;
 use crate::ui::interface::common::Refresch;
 use bevy::app::AppExit;
@@ -7,6 +6,7 @@ use bevy::render::storage::ShaderStorageBuffer;
 use shared::commands_client::CommandClient;
 use shared::resources::GameWorld;
 use std::sync::mpsc::TryRecvError;
+use shared::gpu::*;
 
 use crate::cmd_impls::Execute;
 

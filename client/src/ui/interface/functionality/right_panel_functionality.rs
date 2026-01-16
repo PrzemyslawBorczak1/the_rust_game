@@ -1,9 +1,7 @@
-use crate::ui::gpu::GPUMaterialHandle;
-use crate::ui::{GEOGRAPHICAL_DRAW, POLITICAL_DRAW};
 
-use super::super::super::gpu::GPUMaterial;
 use super::super::common::InterfaceState;
 use super::super::desgin::right_panel::*;
+use shared::gpu::*;
 
 use bevy::prelude::*;
 

@@ -13,9 +13,9 @@ pub struct History {
     is_watching: bool,
 }
 
-pub struct HistoryPlugin;
+pub struct HistoryFunctionality;
 
-impl Plugin for HistoryPlugin {
+impl Plugin for HistoryFunctionality {
     fn build(&self, app: &mut App) {
         app.init_resource::<History>();
     }

@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use server::data::GameState;
 
 use server::game::GamePlugin;
+use server::history::plugin::HistoryPlugin;
 use server::menu::MenuPlugin;
 use server::startup_game::StartUpGamePlugin;
 
@@ -16,5 +17,6 @@ fn main() {
         .add_plugins(MenuPlugin)
         .add_plugins(StartUpGamePlugin)
         .add_plugins(GamePlugin)
+        .add_plugins(HistoryPlugin)
         .run();
 }

@@ -1,0 +1,6 @@
+"filename", "language", "WGSL", "JSON", "comment", "blank", "total"
+"c:\Users\przem\Pulpit\rust\P2\the_rust_game\assets\history\history.json", "JSON", 0, 1, 0, 0, 1
+"c:\Users\przem\Pulpit\rust\P2\the_rust_game\assets\jsons\countries.json", "JSON", 0, 54, 0, 0, 54
+"c:\Users\przem\Pulpit\rust\P2\the_rust_game\assets\jsons\provinces.json", "JSON", 0, 702, 0, 0, 702
+"c:\Users\przem\Pulpit\rust\P2\the_rust_game\assets\shader.wgsl", "WGSL", 86, 0, 0, 38, 124
+"Total", "-", 86, 757, 0, 38, 881

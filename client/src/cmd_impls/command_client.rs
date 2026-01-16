@@ -3,7 +3,7 @@ use crate::{
     ui::interface::common::Refresch,
 };
 
-use super::super::ui::{GPUMaterial, GPUMaterialHandle};
+use shared::gpu::*;
 use bevy::{prelude::*, render::storage::ShaderStorageBuffer};
 use shared::{commands_client::CommandClient, resources::GameWorld};
 

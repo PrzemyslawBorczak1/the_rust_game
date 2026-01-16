@@ -2,8 +2,7 @@ use bevy::camera::Viewport;
 use bevy::{prelude::*, sprite_render::Material2dPlugin};
 use shared::resources::GameWorld;
 
-use super::gpu::{GPUMaterial, GPUMaterialHandle};
-
+use shared::gpu::*;
 pub struct StartupPlugin;
 
 impl Plugin for StartupPlugin {

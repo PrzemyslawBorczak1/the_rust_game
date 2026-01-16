@@ -1,7 +1,6 @@
 use crate::ui::interface::common::Refresch;
-use crate::ui::{CountryGpu, ProvinceGpu};
 
-use super::super::ui::{GPUMaterial, GPUMaterialHandle};
+use shared::gpu::*;
 use super::command_client::*;
 use bevy::prelude::*;
 use bevy::render::storage::ShaderStorageBuffer;

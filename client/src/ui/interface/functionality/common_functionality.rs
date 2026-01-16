@@ -1,12 +1,14 @@
 use super::super::common::*;
 use crate::net::types::ClientOutbox;
-use crate::ui::POLITICAL_DRAW;
 use crate::ui::{
-    ATACK_DRAW, GEOGRAPHICAL_DRAW, GPUMaterial, GPUMaterialHandle, NO_SELECTED_ID,
     interface::{
         desgin::right_panel::MessageLog, functionality::left_panel_functionality,
     },
 };
+use shared::gpu::*;
+
+
+
 use bevy::prelude::*;
 use shared::commands_server::CommandServer;
 use shared::commands_server::basic::Attack;
