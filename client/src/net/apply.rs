@@ -1,5 +1,6 @@
 use super::super::ui::{GPUMaterial, GPUMaterialHandle};
 use crate::ui::interface::MessageLog;
+use crate::ui::interface::common::Refresch;
 use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy::render::storage::ShaderStorageBuffer;
@@ -20,6 +21,7 @@ pub fn apply(
     mut buffers: ResMut<Assets<ShaderStorageBuffer>>,
     mut meshes: ResMut<Assets<Mesh>>,
     q_root: Query<&mut Text, With<MessageLog>>,
+    mut writer: MessageWriter<Refresch>,
 ) {
     let bevy_in = match inbox.0.lock() {
         Ok(g) => g,
@@ -42,6 +44,7 @@ pub fn apply(
                             &mut *buffers,
                             &mut text,
                             &mut meshes,
+                            &mut writer,
                         );
                     }
                     Err(e) => {

@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::resources::Country;
+
 use super::basic::*;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -7,6 +9,7 @@ pub enum CommandClient {
     Init(Init),
     Log(Log),
     UpdateProvince(UpdateProvince),
+    UpdateCountries(Vec<Country>),
 }
 
 impl CommandClient {

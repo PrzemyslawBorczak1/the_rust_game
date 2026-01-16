@@ -4,7 +4,7 @@ use super::super::common::InterfaceState;
 use super::super::desgin::left_panel::*;
 use crate::net::types::ClientOutbox;
 use crate::ui::NO_SELECTED_ID;
-use crate::ui::interface::common::{ActiveProvince, AttackState};
+use crate::ui::interface::common::{ActiveProvince, AttackState, Refresch};
 use crate::ui::interface::desgin::right_panel::MessageLog;
 use bevy::prelude::*;
 use shared::commands_server::CommandServer;
@@ -19,15 +19,13 @@ pub enum LeftPanelView {
     Profile,
 }
 
-#[derive(Message)]
-pub struct Refresch;
 
 pub struct LeftPanelFunctionalityPlugin;
 
 impl Plugin for LeftPanelFunctionalityPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<Refresch>()
-            .insert_resource(ActiveProvince(NO_SELECTED_ID))
+            .insert_resource(ActiveProvince(1))
             .init_state::<LeftPanelView>()
             .init_state::<AttackState>()
             .add_systems(

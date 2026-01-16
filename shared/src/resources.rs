@@ -14,7 +14,7 @@ pub const NO_OWNER: u32 = 213767;
 pub struct Province {
     pub owner_id: u32,
     pub terrain_type: u32,
-    pub gold_per_second: u32,
+    pub gold_production: u32,
     pub level: u32,
     pub army: u32,
 }

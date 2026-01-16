@@ -1,4 +1,7 @@
-use crate::cmd_impls::basic::{ExecuteInit, ExecuteLog, ExecuteUpdateProvince};
+use crate::{
+    cmd_impls::basic::{ExecuteInit, ExecuteLog, ExecuteUpdateCountries, ExecuteUpdateProvince},
+    ui::interface::common::Refresch,
+};
 
 use super::super::ui::{GPUMaterial, GPUMaterialHandle};
 use bevy::{prelude::*, render::storage::ShaderStorageBuffer};
@@ -15,6 +18,7 @@ pub trait Execute {
 
         logger: &mut Text,
         meshes: &mut Assets<Mesh>,
+        writer: &mut MessageWriter<Refresch>,
     );
 }
 
@@ -29,18 +33,15 @@ impl Execute for CommandClient {
 
         logger: &mut Text,
         meshes: &mut Assets<Mesh>,
+        writer: &mut MessageWriter<Refresch>,
     ) {
         match self {
-            // CommandClient::ChangeCountry(cmd) => {
-            //     cmd.execute(world, commands, gpu_materials, handle, buffers, meshes)
-            // }
-            CommandClient::UpdateProvince(cmd) => {
-                cmd.execute(world, gpu_materials, buffers)
-            }
+            CommandClient::UpdateProvince(cmd) => cmd.execute(world, gpu_materials, buffers),
             CommandClient::Init(cmd) => {
                 cmd.execute(world, commands, gpu_materials, handle, buffers, meshes)
             }
             CommandClient::Log(log) => log.execute(logger),
+            CommandClient::UpdateCountries(vec) => vec.execute(world, writer),
         }
     }
 }

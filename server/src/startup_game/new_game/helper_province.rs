@@ -48,7 +48,7 @@ pub fn generate_province(
             army: 0,
             owner_id: NO_OWNER,
             terrain_type: TERRAIN_FLAT,
-            gold_per_second: rng.random_range(6..12),
+            gold_production: rng.random_range(6..12),
             level: 1,
         });
     }
@@ -85,10 +85,10 @@ fn paint_terrain_blobs(ret: &mut [Province], n: usize, adj: &[Vec<usize>], rng: 
         for _ in 0..div {
             ret[idx].terrain_type = terrain;
             if terrain == TERRAIN_WATER {
-                ret[idx].gold_per_second = 0;
+                ret[idx].gold_production = 0;
             } else {
                 // avoid divide-by-zero; terrain is in [1..3]
-                ret[idx].gold_per_second /= terrain;
+                ret[idx].gold_production /= terrain;
             }
 
             if adj[idx].is_empty() {

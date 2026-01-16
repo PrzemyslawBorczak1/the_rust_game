@@ -1,3 +1,4 @@
+use crate::ui::interface::common::Refresch;
 use crate::ui::{CountryGpu, ProvinceGpu};
 
 use super::super::ui::{GPUMaterial, GPUMaterialHandle};
@@ -5,6 +6,7 @@ use super::command_client::*;
 use bevy::prelude::*;
 use bevy::render::render_resource::encase::StorageBuffer;
 use bevy::render::storage::ShaderStorageBuffer;
+use shared::resources::Country;
 use shared::{commands_client::basic::*, resources::GameWorld};
 
 pub trait ExecuteInit {
@@ -84,22 +86,24 @@ impl ExecuteLog for Log {
 }
 
 pub trait ExecuteUpdateProvince {
-    fn execute(self,
+    fn execute(
+        self,
         world: &mut GameWorld,
         gpu_materials: Option<&mut GPUMaterial>,
         buffers: &mut Assets<ShaderStorageBuffer>,
-);
+    );
 }
 
 impl ExecuteUpdateProvince for UpdateProvince {
-    fn execute(self,
-            world: &mut GameWorld,
-            gpu_materials: Option<&mut GPUMaterial>,
-            buffers: &mut Assets<ShaderStorageBuffer>,
+    fn execute(
+        self,
+        world: &mut GameWorld,
+        gpu_materials: Option<&mut GPUMaterial>,
+        buffers: &mut Assets<ShaderStorageBuffer>,
     ) {
         world.provinces[self.id as usize] = self.province;
 
-        if let Some(material) = gpu_materials{
+        if let Some(material) = gpu_materials {
             material.provinces = buffers.add(ShaderStorageBuffer::from(
                 world
                     .provinces
@@ -114,30 +118,14 @@ impl ExecuteUpdateProvince for UpdateProvince {
     }
 }
 
-// impl Execute for Vec<ChangeCountry> {
-//     fn execute(
-//         &self,
-//         world: &mut GameWorld,
-//         commands: &mut Commands,
-//         gpu_materials: &mut Assets<GPUMaterial>,
-//         handle: &mut GPUMaterialHandle,
-//         buffers: &mut Assets<ShaderStorageBuffer>,
-//         meshes: &mut Assets<Mesh>,
-//     ) {
-//         println!("Change country");
-//     }
-// }
+pub trait ExecuteUpdateCountries {
+    fn execute(self, world: &mut GameWorld, writer: &mut MessageWriter<Refresch>);
+}
 
-// impl Execute for Vec<ChangeProvince> {
-//     fn execute(
-//         &self,
-//         world: &mut GameWorld,
-//         commands: &mut Commands,
-//         gpu_materials: &mut Assets<GPUMaterial>,
-//         handle: &mut GPUMaterialHandle,
-//         buffers: &mut Assets<ShaderStorageBuffer>,
-//         meshes: &mut Assets<Mesh>,
-//     ) {
-//         println!("Change Province")
-//     }
-// }
+impl ExecuteUpdateCountries for Vec<Country> {
+    fn execute(self, world: &mut GameWorld, writer: &mut MessageWriter<Refresch>) {
+        info!("Update country");
+        world.countries = self;
+        writer.write(Refresch {});
+    }
+}

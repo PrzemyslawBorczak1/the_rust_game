@@ -22,7 +22,6 @@ pub struct InterfaceText {
     pub base_size: f32,
 }
 
-
 #[derive(States, Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
 pub enum AttackState {
     #[default]
@@ -32,3 +31,6 @@ pub enum AttackState {
 
 #[derive(Resource)]
 pub struct ActiveProvince(pub u32);
+
+#[derive(Message)]
+pub struct Refresch;
