@@ -1,5 +1,5 @@
 mod camera_movement;
-mod gpu;
+pub mod gpu;
 mod impls;
 pub mod interface;
 mod startup;

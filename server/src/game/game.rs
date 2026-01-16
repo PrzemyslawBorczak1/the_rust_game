@@ -1,8 +1,9 @@
 use bevy::{app::PluginGroupBuilder, prelude::*};
 
 use super::systems::SystemsPlugin;
-use crate::game::{
-    ai::AiPlugin, graphics::GameGraphicsPlugin, history::HistoryPlugin, net::NetPlugin,
+use crate::{
+    game::{ai::AiPlugin, graphics::GameGraphicsPlugin, net::NetPlugin},
+    history::history::HistoryPlugin,
 };
 
 pub struct GamePlugin;

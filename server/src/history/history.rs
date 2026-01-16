@@ -43,6 +43,11 @@ impl History {
         }
     }
 
+    pub fn add_change(&mut self, id: u32, new_owner: u32) {
+        info!("Ai zmiana");
+        self.change_id_owner.push((id, new_owner));
+    }
+
     pub fn save(&self) {
         let history = match serde_json::to_string(&self.change_id_owner) {
             Ok(h) => h,

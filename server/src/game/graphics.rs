@@ -6,6 +6,7 @@ use shared::resources::GameWorld;
 use crate::{
     data::{GameState, SaveGamePath},
     game::{ai::AiState, systems::GlobalTimer},
+    history::history::History,
 };
 
 pub struct GameGraphicsPlugin;
@@ -21,6 +22,7 @@ impl Plugin for GameGraphicsPlugin {
                     on_speed_button_click,
                     on_save_button_click,
                     on_start_button_click,
+                    on_history_button_click,
                 ),
             );
     }
@@ -45,12 +47,16 @@ pub struct Speedup2xButton;
 #[derive(Component)]
 pub struct SaveButton;
 
+#[derive(Component)]
+pub struct HistoryButton;
+
 fn startup(mut commands: Commands) {
     println!("Stratup!");
 
     commands.spawn(Camera2d::default());
 
     commands.spawn((
+        DespawnOnExit(GameState::Game),
         GameUiRoot,
         Node {
             width: percent(100.0),
@@ -81,6 +87,7 @@ fn startup(mut commands: Commands) {
                 action_button("Start", StartButton),
                 action_button("Speedup 2x", Speedup2xButton),
                 action_button("Save", SaveButton),
+                action_button("History", HistoryButton),
             ]
         )],
     ));
@@ -160,6 +167,7 @@ fn on_save_button_click(
     q: Query<&Interaction, (Changed<Interaction>, With<Button>, With<SaveButton>)>,
     save: Res<SaveGamePath>,
     world: Res<GameWorld>,
+    history: Res<History>,
 ) {
     for interaction in &q {
         if *interaction == Interaction::Pressed {
@@ -182,6 +190,19 @@ fn on_save_button_click(
             fs::write(&path, json).unwrap_or_else(|e| {
                 error!("Coudlnt save provinces in [{}] : {e}", &path);
             });
+
+            history.save();
+        }
+    }
+}
+
+fn on_history_button_click(
+    q: Query<&Interaction, (Changed<Interaction>, With<Button>, With<HistoryButton>)>,
+    mut game_state: ResMut<NextState<GameState>>,
+) {
+    for interaction in &q {
+        if *interaction == Interaction::Pressed {
+            game_state.set(GameState::History);
         }
     }
 }

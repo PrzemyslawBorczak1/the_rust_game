@@ -5,10 +5,13 @@ use shared::{
     resources::{GameWorld, TERRAIN_WATER},
 };
 
-use crate::game::{
-    command_impl::helpers::make_send,
-    net::types::{ActiveClients, NetOutbox, OutCmd, Target},
-    systems::GlobalTimer,
+use crate::{
+    game::{
+        command_impl::helpers::make_send,
+        net::types::{ActiveClients, NetOutbox, OutCmd, Target},
+        systems::GlobalTimer,
+    },
+    history::history::History,
 };
 
 #[derive(States, Debug, Hash, Eq, PartialEq, Clone, Default)]
@@ -62,17 +65,18 @@ fn make_ai_move(
     ai_country: Res<AiCountries>,
     mut timer: ResMut<GlobalTimer>,
     time: Res<Time>,
+    mut history: ResMut<History>,
 ) {
     if !timer.0.tick(time.delta()).just_finished() || timer.1 == false {
         return;
     }
 
     for country in &ai_country.0 {
-        make_move(&mut world, &sender, country.clone());
+        make_move(&mut world, &sender, country.clone(), &mut history);
     }
 }
 
-fn make_move(world: &mut GameWorld, sender: &NetOutbox, country: u32) {
+fn make_move(world: &mut GameWorld, sender: &NetOutbox, country: u32, history: &mut History) {
     if let Some(src) = find_owned_province_idx(world, country) {
         let neighbours = &world.id.adjacency[src];
         if neighbours.is_empty() {
@@ -88,6 +92,7 @@ fn make_move(world: &mut GameWorld, sender: &NetOutbox, country: u32) {
             if world.provinces[dst].army == 0 {
                 world.provinces[dst].owner_id = country;
                 world.provinces[dst].army = 1;
+                history.add_change(dst as u32, country);
             } else {
                 world.provinces[dst].army -= 1;
             }

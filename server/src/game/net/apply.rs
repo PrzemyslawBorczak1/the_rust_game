@@ -7,10 +7,7 @@ use shared::{
 };
 use std::sync::mpsc::TryRecvError;
 
-use crate::game::{
-    history::{self, History},
-    net::types::Target,
-};
+use crate::{game::net::types::Target, history::history::History};
 
 use super::types::{ActiveClients, InEvent, NetInbox, NetOutbox, OutCmd};
 

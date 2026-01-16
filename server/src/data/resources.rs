@@ -7,6 +7,7 @@ pub enum GameState {
     NewGame,
     LoadGame,
     Game,
+    History,
 }
 
 #[derive(Debug, Default, Resource)]
