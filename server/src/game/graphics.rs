@@ -1,43 +1,57 @@
-use bevy::prelude::*;
+use std::fs;
 
-use crate::data::GameState;
+use bevy::{ecs::world, prelude::*};
+use shared::resources::GameWorld;
+
+use crate::{
+    data::{GameState, SaveGamePath},
+    game::systems::GlobalTimer,
+};
 
 pub struct GameGraphicsPlugin;
 
 impl Plugin for GameGraphicsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<SpeedMultiplier>()
+        app.insert_resource(SpeedMultiplier(2.0))
             .add_systems(OnEnter(GameState::Game), startup)
-            .add_systems(Update, ui_buttons_system);
+            .add_systems(
+                Update,
+                (
+                    button_system,
+                    on_speed_button_click,
+                    on_save_button_click,
+                    on_start_button_click,
+                ),
+            );
     }
 }
 
-#[derive(Component)]
-struct UiRoot;
-
-#[derive(Component, Copy, Clone)]
-enum UiAction {
-    Start,
-    Speed2x,
-}
+const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
+const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
+const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
 #[derive(Resource, Default)]
 pub struct SpeedMultiplier(pub f32);
 
-// ---- startup ----
+#[derive(Component)]
+struct GameUiRoot;
 
-pub fn startup(mut commands: Commands) {
-    spawn_camera(&mut commands);
-    spawn_simple_menu(&mut commands);
-}
+#[derive(Component)]
+pub struct StartButton;
 
-fn spawn_camera(commands: &mut Commands) {
+#[derive(Component)]
+pub struct Speedup2xButton;
+
+#[derive(Component)]
+pub struct SaveButton;
+
+fn startup(mut commands: Commands) {
+    println!("Stratup!");
+
     commands.spawn(Camera2d::default());
-}
 
-fn spawn_simple_menu(commands: &mut Commands) {
     commands.spawn((
-        UiRoot,
+        GameUiRoot,
         Node {
             width: percent(100.0),
             height: percent(100.0),
@@ -45,83 +59,126 @@ fn spawn_simple_menu(commands: &mut Commands) {
             justify_content: JustifyContent::Center,
             ..default()
         },
-        children![spawn_menu_column()],
+        children![(
+            Node {
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::Center,
+                row_gap: px(14.0),
+                ..default()
+            },
+            children![
+                (
+                    Text::new("Game"),
+                    TextFont {
+                        font_size: 67.0,
+                        ..default()
+                    },
+                    Node {
+                        margin: UiRect::all(px(50.0)),
+                        ..default()
+                    },
+                ),
+                action_button("Start", StartButton),
+                action_button("Speedup 2x", Speedup2xButton),
+                action_button("Save", SaveButton),
+            ]
+        )],
     ));
 }
 
-fn spawn_menu_column() -> impl Bundle {
-    (
-        Node {
-            flex_direction: FlexDirection::Column,
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            row_gap: px(18.0),
-            ..default()
-        },
-        children![
-            spawn_button("Start", UiAction::Start),
-            spawn_button("Speedup 2x", UiAction::Speed2x)
-        ],
-    )
-}
-
-fn spawn_button(label: &'static str, action: UiAction) -> impl Bundle {
+fn action_button<M: Component>(label: &str, marker: M) -> impl Bundle {
     (
         Button,
-        action,
+        marker,
+        BackgroundColor(NORMAL_BUTTON),
         Node {
-            width: px(260.0),
-            height: px(64.0),
+            padding: UiRect::all(px(8.0)),
             align_items: AlignItems::Center,
             justify_content: JustifyContent::Center,
-            margin: UiRect::all(px(6.0)),
             ..default()
         },
-        BackgroundColor(Color::srgb(0.18, 0.18, 0.18)),
-        children![(
-            Text::new(label),
-            TextFont {
-                font_size: 34.0,
-                ..default()
-            },
-        )],
+        Text::new(label),
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
     )
 }
 
-// ---- interaction ----
-
-pub fn ui_buttons_system(
-    mut q: Query<
-        (&Interaction, &UiAction, &mut BackgroundColor),
-        (Changed<Interaction>, With<Button>),
-    >,
-    mut speed: ResMut<SpeedMultiplier>,
+fn button_system(
+    mut q: Query<(&Interaction, &mut BackgroundColor), (Changed<Interaction>, With<Button>)>,
 ) {
-    for (interaction, action, mut bg) in &mut q {
-        match *interaction {
-            Interaction::Pressed => {
-                *bg = BackgroundColor(Color::srgb(0.10, 0.10, 0.10));
-                handle_action(*action, &mut speed);
-            }
-            Interaction::Hovered => {
-                *bg = BackgroundColor(Color::srgb(0.24, 0.24, 0.24));
-            }
-            Interaction::None => {
-                *bg = BackgroundColor(Color::srgb(0.18, 0.18, 0.18));
-            }
+    for (interaction, mut bg) in &mut q {
+        *bg = match interaction {
+            Interaction::Pressed => PRESSED_BUTTON.into(),
+            Interaction::Hovered => HOVERED_BUTTON.into(),
+            Interaction::None => NORMAL_BUTTON.into(),
+        };
+    }
+}
+
+fn on_start_button_click(
+    q: Query<&Interaction, (Changed<Interaction>, With<Button>, With<StartButton>)>,
+) {
+    for interaction in &q {
+        if *interaction == Interaction::Pressed {
+            info!("Start pressed");
+            // put your start action here
         }
     }
 }
 
-fn handle_action(action: UiAction, speed: &mut SpeedMultiplier) {
-    match action {
-        UiAction::Start => {
-            info!("Start pressed");
-            // put your "start game" trigger here
+fn on_speed_button_click(
+    mut q: Query<
+        (&Interaction, &mut Text),
+        (Changed<Interaction>, With<Button>, With<Speedup2xButton>),
+    >,
+    mut timer: ResMut<GlobalTimer>,
+    mut speed: ResMut<SpeedMultiplier>,
+) {
+    for (interaction, mut text) in &mut q {
+        if *interaction != Interaction::Pressed {
+            continue;
         }
-        UiAction::Speed2x => {
-            speed.0 = 2.0;
-            info!("Speed set to 2x");
+        if speed.0 > 10.0 {
+            speed.0 = 1.0
+        } else {
+            speed.0 *= 2.0;
+        }
+
+        timer.0.set_duration(std::time::Duration::from_secs_f32(
+            (1.0 / speed.0).max(0.01),
+        ));
+        text.0 = format!("Speedup {}x", speed.0 as u32);
+    }
+}
+
+fn on_save_button_click(
+    q: Query<&Interaction, (Changed<Interaction>, With<Button>, With<SaveButton>)>,
+    save: Res<SaveGamePath>,
+    world: Res<GameWorld>,
+) {
+    for interaction in &q {
+        if *interaction == Interaction::Pressed {
+            let json = serde_json::to_string(&world.provinces).unwrap_or_else(|e| {
+                error!("Coudlnt create json for province: {}", e);
+                String::new()
+            });
+
+            let path = "assets\\".to_string() + &save.vec_provinces;
+            fs::write(&path, json).unwrap_or_else(|e| {
+                error!("Coudlnt save provinces in [{}] : {e}", &path);
+            });
+
+            let json = serde_json::to_string(&world.countries).unwrap_or_else(|e| {
+                error!("Coudlnt create json for province: {}", e);
+                String::new()
+            });
+
+            let path = "assets\\".to_string() + &save.vec_country;
+            fs::write(&path, json).unwrap_or_else(|e| {
+                error!("Coudlnt save provinces in [{}] : {e}", &path);
+            });
         }
     }
 }

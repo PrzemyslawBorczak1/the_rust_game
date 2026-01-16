@@ -1,7 +1,7 @@
 use bevy::{app::PluginGroupBuilder, prelude::*};
 
 use super::systems::SystemsPlugin;
-use crate::game::net::NetPlugin;
+use crate::game::{graphics::GameGraphicsPlugin, net::NetPlugin};
 
 pub struct GamePlugin;
 
@@ -10,5 +10,6 @@ impl PluginGroup for GamePlugin {
         PluginGroupBuilder::start::<Self>()
             .add(NetPlugin)
             .add(SystemsPlugin)
+            .add(GameGraphicsPlugin)
     }
 }

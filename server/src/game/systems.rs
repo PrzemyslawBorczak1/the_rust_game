@@ -9,7 +9,7 @@ use crate::{
     game::net::types::{NetOutbox, OutCmd, Target},
 };
 #[derive(Resource)]
-struct GlobalTimer(Timer);
+pub struct GlobalTimer(pub Timer);
 
 pub struct SystemsPlugin;
 

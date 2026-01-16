@@ -36,6 +36,7 @@ fn finish(
 
     mut world: ResMut<GameWorld>,
     mut loading_state: ResMut<NextState<LoadingState>>,
+    mut game_state: ResMut<NextState<GameState>>,
     mut commands: Commands,
 ) {
     if let Some(prov) = prov.get(prov_handle.0.id()) {
@@ -50,6 +51,7 @@ fn finish(
                 commands.remove_resource::<IdMapHandle>();
 
                 loading_state.set(LoadingState::Finished);
+
                 println!("\n\nFinished\n\n");
             }
         }

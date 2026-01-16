@@ -134,26 +134,30 @@ mod ui {
     }
 }
 mod seters {
+    use crate::startup_game::graphics::LoadingGraphics;
+
     use super::*;
 
     pub fn load(
         mut game_state: ResMut<NextState<GameState>>,
         mut fetch: ResMut<FetchGamePath>,
         mut save: ResMut<SaveGamePath>,
+        mut graphics: ResMut<NextState<LoadingGraphics>>,
     ) {
         *fetch = FetchGamePath {
-            id_texture: "map1.png".to_string(),
-            vec_provinces: "provinces.json".to_string(),
-            vec_country: "countries.json".to_string(),
+            id_texture: "maps\\map_ng.png".to_string(),
+            vec_provinces: "jsons\\provinces.json".to_string(),
+            vec_country: "jsons\\countries.json".to_string(),
         };
 
         *save = SaveGamePath {
-            id_texture: "map1.png".to_string(),
-            vec_provinces: "provinces.json".to_string(),
-            vec_country: "countries.json".to_string(),
+            id_texture: "maps\\map_ng.png".to_string(),
+            vec_provinces: "jsons\\provinces.json".to_string(),
+            vec_country: "jsons\\countries.json".to_string(),
         };
 
         game_state.set(GameState::LoadGame);
+        graphics.set(LoadingGraphics::Show);
     }
 
     pub fn new_game(
@@ -168,9 +172,9 @@ mod seters {
         };
 
         *save = SaveGamePath {
-            id_texture: "map1.png".to_string(),
-            vec_provinces: "provinces.json".to_string(),
-            vec_country: "countries.json".to_string(),
+            id_texture: "maps\\map_ng.png".to_string(),
+            vec_provinces: "jsons\\provinces.json".to_string(),
+            vec_country: "jsons\\countries.json".to_string(),
         };
         game_state.set(GameState::NewGame);
     }
