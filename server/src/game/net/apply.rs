@@ -7,7 +7,10 @@ use shared::{
 };
 use std::sync::mpsc::TryRecvError;
 
-use crate::game::net::types::Target;
+use crate::game::{
+    history::{self, History},
+    net::types::Target,
+};
 
 use super::types::{ActiveClients, InEvent, NetInbox, NetOutbox, OutCmd};
 
@@ -16,6 +19,7 @@ pub fn apply_net_events(
     writer_in: Res<NetOutbox>,
     mut active: ResMut<ActiveClients>,
     mut world: ResMut<GameWorld>,
+    mut history: ResMut<History>,
 ) {
     let rx = match bevy_out.0.lock() {
         Ok(guard) => guard,
@@ -28,7 +32,7 @@ pub fn apply_net_events(
     loop {
         match rx.try_recv() {
             Ok(ev) => {
-                if !handle_event(ev, &writer_in, &mut active, &mut world) {
+                if !handle_event(ev, &writer_in, &mut active, &mut world, &mut history) {
                     break;
                 }
             }
@@ -48,6 +52,7 @@ fn handle_event(
     outbox: &Res<NetOutbox>,
     active: &mut ResMut<ActiveClients>,
     world: &mut ResMut<GameWorld>,
+    history: &mut History,
 ) -> bool {
     match ev {
         InEvent::Connected { addr } => handle_connected(addr, outbox, active, world),
@@ -56,7 +61,13 @@ fn handle_event(
             true
         }
         InEvent::Command { addr, command } => {
+            if let CommandServer::Attack(a) = &command {
+                history.set_watch(a, world);
+            }
+
             handle_command(addr, active, command, outbox, world);
+
+            history.consolidate(world);
             true
         }
         InEvent::Error { addr, msg } => {
