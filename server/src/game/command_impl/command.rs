@@ -34,6 +34,7 @@ impl Execute for CommandServer {
                 a.execute(world, *idx, addr)
             }
             CommandServer::ChooseCountry(cc) => cc.execute(world, active, addr),
+            CommandServer::BuyBank(bb) => bb.execute(world, active, addr),
         }
     }
 }

@@ -8,7 +8,7 @@ use crate::ui::interface::common::{ActiveProvince, AttackState, Refresch};
 use crate::ui::interface::desgin::right_panel::MessageLog;
 use bevy::prelude::*;
 use shared::commands_server::CommandServer;
-use shared::commands_server::basic::ChooseCountry;
+use shared::commands_server::basic::{BuyBank, ChooseCountry};
 use shared::resources::GameWorld;
 
 #[derive(States, Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
@@ -18,7 +18,6 @@ pub enum LeftPanelView {
     Country,
     Profile,
 }
-
 
 pub struct LeftPanelFunctionalityPlugin;
 
@@ -37,6 +36,7 @@ impl Plugin for LeftPanelFunctionalityPlugin {
                         on_atack_button_click,
                         on_profile_button_click,
                         on_choose_country_button_click,
+                        on_build_bank_button,
                     )
                         .run_if(in_state(InterfaceState::Visibile)),
                     on_refresh,
@@ -113,6 +113,28 @@ fn on_choose_country_button_click(
                 if let Err(e) = outbox.0.send(s) {
                     error!("Couldnt send choose country: [{e}]");
                 }
+            }
+        }
+    }
+}
+
+fn on_build_bank_button(
+    q: Query<&Interaction, (Changed<Interaction>, With<Button>, With<BuildBankButton>)>,
+    province: Res<ActiveProvince>,
+    out: Res<ClientOutbox>,
+) {
+    for interaction in q {
+        let msg = match CommandServer::BuyBank(BuyBank(province.0)).serialize() {
+            Ok(x) => x,
+            Err(e) => {
+                error!("Could serilize BuyBank: {:?}", e);
+                return;
+            }
+        };
+
+        if *interaction == Interaction::Pressed {
+            if let Err(s) = out.0.send(msg){
+                error!("Couldnt send BuyBank")
             }
         }
     }

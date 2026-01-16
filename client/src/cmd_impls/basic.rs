@@ -4,7 +4,6 @@ use crate::ui::{CountryGpu, ProvinceGpu};
 use super::super::ui::{GPUMaterial, GPUMaterialHandle};
 use super::command_client::*;
 use bevy::prelude::*;
-use bevy::render::render_resource::encase::StorageBuffer;
 use bevy::render::storage::ShaderStorageBuffer;
 use shared::resources::Country;
 use shared::{commands_client::basic::*, resources::GameWorld};

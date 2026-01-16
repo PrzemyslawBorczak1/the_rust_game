@@ -34,6 +34,12 @@ pub struct ProfileMetaText;
 #[derive(Component)]
 pub struct ChooseCountryButton;
 
+#[derive(Component)]
+pub struct BuildBankButton;
+
+#[derive(Component)]
+pub struct BuyArmyButton;
+
 pub fn left_panel() -> impl Bundle {
     (
         InterfaceLeftPanel,
@@ -152,7 +158,12 @@ pub fn province_panel() -> impl Bundle {
             row_gap: px(8),
             ..default()
         },
-        children![province_meta_text(), action_button("Attack", AttackButton),],
+        children![
+            province_meta_text(),
+            action_button("Attack", AttackButton),
+            action_button("Build Bank", BuildBankButton),
+            action_button("Buy Army", BuyArmyButton)
+        ],
     )
 }
 
