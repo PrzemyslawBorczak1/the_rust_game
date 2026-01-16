@@ -8,6 +8,7 @@ use shared::{
 use crate::game::{
     command_impl::helpers::make_send,
     net::types::{ActiveClients, NetOutbox, OutCmd, Target},
+    systems::GlobalTimer,
 };
 
 #[derive(States, Debug, Hash, Eq, PartialEq, Clone, Default)]
@@ -20,18 +21,11 @@ pub enum AiState {
 #[derive(Resource, Default)]
 pub struct AiCountries(pub Vec<u32>);
 
-#[derive(Resource, Default)]
-pub struct AiTimer(pub Timer, pub bool);
-
 pub struct AiPlugin;
 
 impl Plugin for AiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AiCountries>()
-            .insert_resource(AiTimer(
-                Timer::from_seconds(2.0, TimerMode::Repeating),
-                false,
-            ))
             .init_state::<AiState>()
             .add_systems(OnEnter(AiState::Runing), start_ai)
             .add_systems(Update, make_ai_move.run_if(in_state(AiState::Runing)));
@@ -41,26 +35,32 @@ impl Plugin for AiPlugin {
 fn start_ai(
     mut world: ResMut<GameWorld>,
     mut ai_countries: ResMut<AiCountries>,
-    mut timer: ResMut<AiTimer>,
+    active_clients: Res<ActiveClients>,
 ) {
     let mut i = 0u32;
 
     for c in &mut world.countries {
-        if !c.is_taken {
+        if !c.is_taken
+            && !active_clients.0.values().any(|f| {
+                if let Some(c) = f {
+                    return c == &i;
+                }
+
+                false
+            })
+        {
             ai_countries.0.push(i);
         }
         c.is_taken = true;
         i += 1;
     }
-
-    timer.1 = true;
 }
 
 fn make_ai_move(
     mut world: ResMut<GameWorld>,
     sender: Res<NetOutbox>,
     ai_country: Res<AiCountries>,
-    mut timer: ResMut<AiTimer>,
+    mut timer: ResMut<GlobalTimer>,
     time: Res<Time>,
 ) {
     if !timer.0.tick(time.delta()).just_finished() || timer.1 == false {
