@@ -6,3 +6,5 @@ pub use net::NetPlugin;
 
 mod command_impl;
 mod systems;
+
+mod graphics;

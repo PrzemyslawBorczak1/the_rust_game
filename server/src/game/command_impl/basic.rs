@@ -10,164 +10,7 @@ use shared::{
 
 use crate::game::net::types::{ActiveClients, OutCmd, Target};
 
-macro_rules! send_log_return {
-    ($addr:expr, $text:expr) => {{
-        if let Ok(s) = CommandClient::Log(Log($text)).serialize() {
-            return Some(vec![OutCmd::Send {
-                targets: Target::Some(vec![$addr]),
-                msg: s,
-            }]);
-        } else {
-            error!("Couldnt send log to client");
-        }
-    }};
-}
-
-macro_rules! add_log_return {
-    ($addr:expr, $text:expr, $vec:expr) => {{
-        if let Ok(s) = CommandClient::Log(Log(($text).to_string())).serialize() {
-            $vec.push(OutCmd::Send {
-                targets: Target::Some(vec![$addr]),
-                msg: s,
-            });
-            return Some($vec);
-        } else {
-            error!("Couldn't send log to client");
-            return Some($vec); // still return, so it always diverges
-        }
-    }};
-}
-
-macro_rules! push_update_province_all_or_return_none {
-    ($ret:expr, $world:expr, $idx:expr) => {{
-        let __idx_u32 = $idx as u32;
-
-        let __change = CommandClient::UpdateProvince(UpdateProvince {
-            id: __idx_u32,
-            province: $world.provinces[__idx_u32 as usize].clone(),
-        });
-
-        let __msg = match __change.serialize() {
-            Ok(x) => x,
-            Err(_) => {
-                error!("Couldn serialzie {:?}", __change);
-                return None;
-            }
-        };
-
-        $ret.push(OutCmd::Send {
-            targets: Target::All,
-            msg: __msg,
-        });
-    }};
-}
-
-pub trait ExecuteAttack {
-    fn execute(
-        &self,
-        world: &mut GameWorld,
-        id_country: Option<u32>,
-        addr: SocketAddr,
-    ) -> Option<Vec<OutCmd>>;
-}
-
-impl ExecuteAttack for Attack {
-    fn execute(
-        &self,
-        world: &mut GameWorld,
-        id_country: Option<u32>,
-        addr: SocketAddr,
-    ) -> Option<Vec<OutCmd>> {
-        let id_country = match id_country {
-            None => {
-                send_log_return!(addr, "Choose country first".to_string());
-                return None;
-            }
-            Some(x) => x,
-        };
-
-        if world.provinces[self.from_province as usize].owner_id != id_country {
-            send_log_return!(
-                addr,
-                "You cant only move army from you own province".to_string()
-            );
-        }
-
-        if !world.id.adjacency[self.from_province as usize].contains(&self.to_province) {
-            send_log_return!(
-                addr,
-                "You cant only move army to adjacenc provinces".to_string()
-            );
-        }
-
-        if !world.id.adjacency[self.from_province as usize].contains(&self.to_province) {
-            send_log_return!(
-                addr,
-                "You cant only move army to adjacenc provinces".to_string()
-            );
-        }
-
-        let mut ret: Vec<OutCmd> = vec![];
-
-        let army = world.provinces[self.from_province as usize].army;
-        world.provinces[self.from_province as usize].army = 0;
-        let enemy = world.provinces[self.to_province as usize].owner_id;
-
-        push_update_province_all_or_return_none!(ret, world, self.from_province);
-
-        if world.provinces[self.to_province as usize].terrain_type == TERRAIN_WATER {
-            add_log_return!(addr, "All of your army drowned".to_string(), ret);
-        }
-
-        if enemy == id_country {
-            world.provinces[self.from_province as usize].army = 0;
-            world.provinces[self.to_province as usize].army = army;
-            push_update_province_all_or_return_none!(ret, world, self.to_province);
-            send_log_return!(addr, "You have moved your army".to_string());
-        }
-
-        if enemy != NO_OWNER && !world.countries[id_country as usize].war.contains(&enemy) {
-            push_update_province_all_or_return_none!(ret, world, self.to_province);
-            add_log_return!(
-                addr,
-                "You have to be at war with another country to send there army".to_string(),
-                ret
-            );
-        }
-
-        if enemy == NO_OWNER {
-            world.provinces[self.to_province as usize].army = army;
-            world.provinces[self.to_province as usize].owner_id = id_country;
-
-            push_update_province_all_or_return_none!(ret, world, self.to_province);
-            add_log_return!(
-                addr,
-                "You have counquerd another province :)".to_string(),
-                ret
-            );
-        } else {
-            let enemy_army = world.provinces[self.to_province as usize].army;
-            if enemy_army > army {
-                world.provinces[self.to_province as usize].army = enemy_army - army;
-
-                push_update_province_all_or_return_none!(ret, world, self.to_province);
-                add_log_return!(addr, "All of your solders died".to_string(), ret);
-            } else {
-                world.provinces[self.to_province as usize].army = army - enemy_army;
-                world.provinces[self.to_province as usize].owner_id = id_country;
-
-                push_update_province_all_or_return_none!(ret, world, self.to_province);
-                add_log_return!(
-                    addr,
-                    "You have counquerd another province :)".to_string(),
-                    ret
-                );
-            }
-        }
-
-        None
-    }
-}
+use super::helpers::*;
 
 pub trait ExecuteChooseCountry {
     fn execute(
@@ -178,45 +21,26 @@ pub trait ExecuteChooseCountry {
     ) -> Option<Vec<OutCmd>>;
 }
 
-macro_rules! enqueue_msg {
-    ($ret:expr, $cmd:expr) => {{
-        let cmd = $cmd;
+fn choose_country(active: &mut ActiveClients, addr: SocketAddr, id: u32) -> Option<Vec<OutCmd>> {
+    if id == NO_OWNER {
+        return log_only(addr, "Selected province doesnt have owner".to_string());
+    }
+    if active.0.values().any(|v| v == &Some(id)) {
+        return log_only(addr, "Country already taken".to_string());
+    }
 
-        let msg = match cmd.serialize() {
-            Ok(s) => s,
-            Err(e) => {
-                error!("Couldn't serialize {:?}", cmd);
-                return None;
-            }
-        };
-
-        $ret.push(OutCmd::Send {
-            targets: Target::All,
-            msg: msg,
-        });
-    }};
+    active.0.insert(addr, Some(id));
+    log_only(addr, "Country chosen succesfully".to_string())
 }
 
 impl ExecuteChooseCountry for ChooseCountry {
     fn execute(
         &self,
-        world: &mut GameWorld,
+        _world: &mut GameWorld,
         active: &mut ActiveClients,
         addr: SocketAddr,
     ) -> Option<Vec<OutCmd>> {
-        if self.0 == NO_OWNER {
-            send_log_return!(addr, "Selected province doesnt have owner".to_string());
-        }
-        let exists = active.0.values().any(|v| v == &Some(self.0));
-        if exists {
-            send_log_return!(addr, "Country already taken".to_string());
-        }
-
-        active.0.insert(addr, Some(self.0));
-
-        send_log_return!(addr, "Country chosen succesfully".to_string());
-
-        None
+        choose_country(active, addr, self.0)
     }
 }
 
@@ -229,6 +53,57 @@ pub trait ExecuteBuyBank {
     ) -> Option<Vec<OutCmd>>;
 }
 
+fn bank_cost_for_level(level: u32) -> Option<u32> {
+    let prices = [100u32, 10000u32, 50000u32];
+    let idx = level.saturating_sub(1) as usize;
+    prices.get(idx).copied()
+}
+
+fn buy_bank(
+    world: &mut GameWorld,
+    province_id: u32,
+    owner: u32,
+    addr: SocketAddr,
+) -> Option<Vec<OutCmd>> {
+    if province_id == NO_OWNER {
+        return log_only(addr, "Choose country first".to_string());
+    }
+
+    let province = world.provinces[province_id as usize].clone();
+    if owner != province.owner_id {
+        return log_only(addr, "Better buy bank in your country".to_string());
+    }
+    if province.level > 2 {
+        return log_only(addr, "You have max level bank".to_string());
+    }
+
+    let needs = match bank_cost_for_level(province.level) {
+        Some(x) => x,
+        None => return log_only(addr, "Invalid bank level".to_string()),
+    };
+    if world.countries[owner as usize].gold < needs {
+        return log_only(addr, "You dont have enough gold".to_string());
+    }
+
+    world.countries[owner as usize].gold -= needs;
+    world.provinces[province_id as usize].level += 1;
+    world.provinces[province_id as usize].gold_production *= 2;
+
+    let mut out = Vec::new();
+    push_cmd_all(
+        &mut out,
+        CommandClient::UpdateCountries(world.countries.clone()),
+    )?;
+    push_cmd_all(
+        &mut out,
+        CommandClient::UpdateProvince(UpdateProvince {
+            id: province_id,
+            province: world.provinces[province_id as usize].clone(),
+        }),
+    )?;
+    append_log(addr, "You succesffully bought bank".to_string(), out)
+}
+
 impl ExecuteBuyBank for BuyBank {
     fn execute(
         &self,
@@ -236,53 +111,149 @@ impl ExecuteBuyBank for BuyBank {
         active: &mut ActiveClients,
         addr: SocketAddr,
     ) -> Option<Vec<OutCmd>> {
-        let mut ret: Vec<OutCmd> = vec![];
+        let owner = match require_selected_country(active, addr) {
+            Ok(x) => x,
+            Err(out) => return Some(out),
+        };
+        buy_bank(world, self.0, owner, addr)
+    }
+}
 
-        let true_owner = match active.0[&addr] {
-            Some(x) => x,
-            None => {
-                send_log_return!(addr, "Choose country first".to_string());
-                return None;
-            }
+pub trait ExecuteBuyArmy {
+    fn execute(
+        &self,
+        world: &mut GameWorld,
+        active: &mut ActiveClients,
+        addr: SocketAddr,
+    ) -> Option<Vec<OutCmd>>;
+}
+
+fn buy_army(
+    world: &mut GameWorld,
+    province_id: u32,
+    owner: u32,
+    addr: SocketAddr,
+) -> Option<Vec<OutCmd>> {
+    if province_id == NO_OWNER {
+        return log_only(addr, "Choose country first".to_string());
+    }
+
+    let province = world.provinces[province_id as usize].clone();
+    if owner != province.owner_id {
+        return log_only(addr, "Better buy army in your country".to_string());
+    }
+
+    let price = 10u32;
+    if world.countries[owner as usize].gold < price {
+        return log_only(addr, "You dont have enough gold".to_string());
+    }
+
+    let army_amount = world.countries[owner as usize].gold / price;
+    world.countries[owner as usize].gold -= army_amount * price;
+    world.provinces[province_id as usize].army += army_amount;
+
+    let mut out = Vec::new();
+    push_cmd_all(
+        &mut out,
+        CommandClient::UpdateCountries(world.countries.clone()),
+    )?;
+    push_cmd_all(
+        &mut out,
+        CommandClient::UpdateProvince(UpdateProvince {
+            id: province_id,
+            province: world.provinces[province_id as usize].clone(),
+        }),
+    )?;
+    append_log(addr, "You succesffully bought army".to_string(), out)
+}
+
+impl ExecuteBuyArmy for BuyArmy {
+    fn execute(
+        &self,
+        world: &mut GameWorld,
+        active: &mut ActiveClients,
+        addr: SocketAddr,
+    ) -> Option<Vec<OutCmd>> {
+        let owner = match require_selected_country(active, addr) {
+            Ok(x) => x,
+            Err(out) => return Some(out),
+        };
+        buy_army(world, self.0, owner, addr)
+    }
+}
+
+pub trait ExecuteMakePeace {
+    fn execute(
+        &self,
+        world: &mut GameWorld,
+        active: &mut ActiveClients,
+        addr: SocketAddr,
+    ) -> Option<Vec<OutCmd>>;
+}
+
+impl ExecuteMakePeace for MakePeace {
+    fn execute(
+        &self,
+        world: &mut GameWorld,
+        active: &mut ActiveClients,
+        addr: SocketAddr,
+    ) -> Option<Vec<OutCmd>> {
+        let id = match require_selected_country(active, addr) {
+            Ok(x) => x,
+            Err(e) => return Some(e),
         };
 
         if self.0 == NO_OWNER {
-            send_log_return!(addr, "Choose country first".to_string());
+            return log_only(addr, "Make peace with real country".to_string());
         }
 
-        let province = world.provinces[self.0 as usize].clone();
+        world.countries[id as usize].war.remove(&self.0);
 
-        if true_owner != province.owner_id {
-            send_log_return!(addr, "Better buy bank in your country".to_string());
+        let mut ret = vec![];
+
+        push_cmd_all(
+            &mut ret,
+            CommandClient::UpdateCountries(world.countries.clone()),
+        );
+
+        return append_log(addr, "You succesfully made peace".to_string(), ret);
+    }
+}
+
+pub trait ExecuteStartWar {
+    fn execute(
+        &self,
+        world: &mut GameWorld,
+        active: &mut ActiveClients,
+        addr: SocketAddr,
+    ) -> Option<Vec<OutCmd>>;
+}
+
+impl ExecuteStartWar for StartWar {
+    fn execute(
+        &self,
+        world: &mut GameWorld,
+        active: &mut ActiveClients,
+        addr: SocketAddr,
+    ) -> Option<Vec<OutCmd>> {
+        let id = match require_selected_country(active, addr) {
+            Ok(x) => x,
+            Err(e) => return Some(e),
+        };
+
+        if self.0 == NO_OWNER {
+            return log_only(addr, "Start war with real country".to_string());
         }
 
-        if province.level > 2 {
-            send_log_return!(addr, "You have max level bank".to_string());
-        }
+        world.countries[id as usize].war.insert(self.0);
 
-        let bank_prices: Vec<u32> = vec![100, 10000, 50000];
-        let needs = bank_prices[province.level as usize - 1];
+        let mut ret = vec![];
 
-        if world.countries[true_owner as usize].gold < needs {
-            println!(
-                "has {:?} need {:?}",
-                world.countries[true_owner as usize].gold, needs
-            );
-            send_log_return!(addr, "You dont have enough gold".to_string());
-        }
+        push_cmd_all(
+            &mut ret,
+            CommandClient::UpdateCountries(world.countries.clone()),
+        );
 
-        world.countries[true_owner as usize].gold -= needs;
-        world.provinces[self.0 as usize].level += 1;
-        world.provinces[self.0 as usize].gold_production *= 2;
-
-        let msg1 = CommandClient::UpdateCountries(world.countries.clone());
-        let msg2 = CommandClient::UpdateProvince(UpdateProvince {
-            id: self.0,
-            province: world.provinces[self.0 as usize].clone(),
-        });
-
-        enqueue_msg!(ret, msg1);
-        enqueue_msg!(ret, msg2);
-        add_log_return!(addr, "You succesffully bought bank".to_string(), ret);
+        return append_log(addr, "You succesfully started war".to_string(), ret);
     }
 }

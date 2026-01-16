@@ -40,6 +40,12 @@ pub struct BuildBankButton;
 #[derive(Component)]
 pub struct BuyArmyButton;
 
+#[derive(Component)]
+pub struct MakePeaceButton;
+
+#[derive(Component)]
+pub struct StartWarButton;
+
 pub fn left_panel() -> impl Bundle {
     (
         InterfaceLeftPanel,
@@ -108,7 +114,9 @@ pub fn country_panel() -> impl Bundle {
         children![
             country_flag_slot(),
             country_meta_text(),
-            action_button("Choose Country", ChooseCountryButton)
+            action_button("Choose Country", ChooseCountryButton),
+            action_button("Make Peace", MakePeaceButton),
+            action_button("Start War", StartWarButton),
         ],
     )
 }

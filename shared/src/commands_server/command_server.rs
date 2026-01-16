@@ -8,6 +8,9 @@ pub enum CommandServer {
     Attack(Attack),
     ChooseCountry(ChooseCountry),
     BuyBank(BuyBank),
+    BuyArmy(BuyArmy),
+    MakePeace(MakePeace),
+    StartWar(StartWar),
 }
 
 impl CommandServer {

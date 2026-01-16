@@ -8,8 +8,8 @@ use crate::ui::interface::common::{ActiveProvince, AttackState, Refresch};
 use crate::ui::interface::desgin::right_panel::MessageLog;
 use bevy::prelude::*;
 use shared::commands_server::CommandServer;
-use shared::commands_server::basic::{BuyBank, ChooseCountry};
-use shared::resources::GameWorld;
+use shared::commands_server::basic::{BuyArmy, BuyBank, ChooseCountry, MakePeace, StartWar};
+use shared::resources::{GameWorld, NO_OWNER};
 
 #[derive(States, Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
 pub enum LeftPanelView {
@@ -37,6 +37,9 @@ impl Plugin for LeftPanelFunctionalityPlugin {
                         on_profile_button_click,
                         on_choose_country_button_click,
                         on_build_bank_button,
+                        on_buy_army_button,
+                        on_make_peace_button,
+                        on_start_war_button,
                     )
                         .run_if(in_state(InterfaceState::Visibile)),
                     on_refresh,
@@ -133,8 +136,93 @@ fn on_build_bank_button(
         };
 
         if *interaction == Interaction::Pressed {
-            if let Err(s) = out.0.send(msg){
+            if let Err(s) = out.0.send(msg) {
                 error!("Couldnt send BuyBank")
+            }
+        }
+    }
+}
+
+fn on_buy_army_button(
+    q: Query<&Interaction, (Changed<Interaction>, With<Button>, With<BuyArmyButton>)>,
+    province: Res<ActiveProvince>,
+    out: Res<ClientOutbox>,
+) {
+    for interaction in q {
+        let msg = match CommandServer::BuyArmy(BuyArmy(province.0)).serialize() {
+            Ok(x) => x,
+            Err(e) => {
+                error!("Could serilize BuyBank: {:?}", e);
+                return;
+            }
+        };
+
+        if *interaction == Interaction::Pressed {
+            if let Err(s) = out.0.send(msg) {
+                error!("Couldnt send BuyBank")
+            }
+        }
+    }
+}
+
+fn on_make_peace_button(
+    q: Query<&Interaction, (Changed<Interaction>, With<Button>, With<MakePeaceButton>)>,
+    world: Res<GameWorld>,
+    province: Res<ActiveProvince>,
+    out: Res<ClientOutbox>,
+) {
+    if province.0 == NO_OWNER {
+        return;
+    }
+    if world.provinces.len() == 0 {
+        return;
+    }
+
+    let idx = world.provinces[province.0 as usize].owner_id;
+    for interaction in q {
+        let msg = match CommandServer::MakePeace(MakePeace(idx)).serialize() {
+            Ok(x) => x,
+            Err(e) => {
+                error!("Could serilize MakePeace: {:?}", e);
+                return;
+            }
+        };
+
+        if *interaction == Interaction::Pressed {
+            if let Err(s) = out.0.send(msg) {
+                error!("Couldnt send MakePeace")
+            }
+        }
+    }
+}
+
+fn on_start_war_button(
+    q: Query<&Interaction, (Changed<Interaction>, With<Button>, With<StartWarButton>)>,
+    world: Res<GameWorld>,
+    province: Res<ActiveProvince>,
+    out: Res<ClientOutbox>,
+) {
+    if province.0 == NO_OWNER {
+        return;
+    }
+
+    if world.provinces.len() == 0 {
+        return;
+    }
+
+    let idx = world.provinces[province.0 as usize].owner_id;
+    for interaction in q {
+        let msg = match CommandServer::StartWar(StartWar(idx)).serialize() {
+            Ok(x) => x,
+            Err(e) => {
+                error!("Could serilize StartWar: {:?}", e);
+                return;
+            }
+        };
+
+        if *interaction == Interaction::Pressed {
+            if let Err(s) = out.0.send(msg) {
+                error!("Couldnt send StartWar")
             }
         }
     }
